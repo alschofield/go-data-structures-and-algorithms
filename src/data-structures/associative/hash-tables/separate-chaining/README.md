@@ -1,13 +1,33 @@
 # Hash Table
 
 ## How It Works
-A hash selects one of ten fixed buckets and collisions form linked chains.
+A hash selects a bucket and collisions form linked chains. `Set` preserves the
+chosen fixed capacity; `SetResizing` doubles and rehashes buckets before a new
+entry would exceed a 0.75 load factor.
 
 ## Required API
-Generic `type HashTable[K any, V any]` with `NewHashTable(hash func(K) uint, equal func(K,K) bool)`, `Set(K,V) (V,bool)`, `Get(K) (V,bool)`, `Remove(K) (V,bool)`, `Contains(K) bool`, `Len() int`, and `IsEmpty() bool`.
+Generic `type HashTable[K any, V any]` with
+`NewHashTable(initialCapacity int, hash func(K) uint, equal func(K, K) bool)`,
+`Set(K, V) (V, bool)`, `SetResizing(K, V) (V, bool)`, `Get(K) (V, bool)`,
+`Remove(K) (V, bool)`, `Contains(K) bool`, `Len() int`, `Cap() int`, and
+`IsEmpty() bool`.
 
 ## Contract
-Set inserts or replaces an equal key's value while retaining the first key. Different keys with equal hashes remain correct. Use exactly ten fixed buckets and separate chaining, not Go maps.
+- `NewHashTable` requires a nonzero initial capacity. Standard callers use
+  `10`; an invalid capacity must be rejected without creating a table.
+- Both set methods insert a new key or replace an equal key's value while
+  retaining the first stored key. Their boolean reports whether a prior value
+  was returned.
+- `Set` never changes capacity.
+- `SetResizing` checks whether adding a new key would exceed a 0.75 load
+  factor. If so, it doubles capacity and rehashes every entry with
+  `hash(key) % newCapacity` before insertion. A failed allocation preserves
+  the table, capacity, and result.
+- Absent lookups and removals do not mutate. Different keys with equal hashes
+  remain correct. Do not use Go maps.
 
 ## Complexity Targets
-Expected O(1) with short chains, O(n/10) as chains grow, O(n) worst case; Len/IsEmpty O(1); O(entries+10) space.
+`Set`, `Get`, `Remove`, and `Contains` are expected O(1) with short chains,
+O(n / capacity) as fixed chains grow, and O(n) worst case. `SetResizing` is
+expected amortized O(1) and O(n) when resizing. `Len`, `Cap`, and `IsEmpty`
+are O(1); space is O(entries + capacity).
