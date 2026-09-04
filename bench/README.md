@@ -20,6 +20,10 @@ Keep setup outside `b.ResetTimer`, validate results after `b.StopTimer`, call
 Use `b.Run` for size and workload subcases. Do not report a result until the
 matching `contract` tests pass.
 
+An invalid-input benchmark may measure rejection only after the normal contract
+passes, but it is not a substitute for tagged error assertions. Never benchmark
+or recover from a panic as an invalid-input outcome.
+
 ## Leaf Plans
 
 | Leaf | Benchmark subcases |

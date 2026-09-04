@@ -43,6 +43,14 @@ matrix retain ownership of values and storage, then expose their dense indexed
 view through `AsGraph()`. Traversal, shortest-path, and spanning-tree
 algorithms operate only on that `Graph` interface.
 
+## Error Handling
+
+All leaf APIs follow the [error-handling contract](ERROR-HANDLING.md): final
+`error` values report only invalid arguments or invalid state; expected
+absence and empty lookups remain ordinary boolean or zero/empty results.
+Contract tests are opt-in and encode these signatures without requiring any
+unfinished production declaration during default validation.
+
 ## Status
 
 All 28 leaves include user-owned package-only production source scaffolds under

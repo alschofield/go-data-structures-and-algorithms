@@ -7,14 +7,16 @@ entry would exceed a 0.75 load factor.
 
 ## Required API
 Generic `type HashTable[K any, V any]` with
-`NewHashTable(initialCapacity int, hash func(K) uint, equal func(K, K) bool)`,
+`NewHashTable(initialCapacity int, hash func(K) uint, equal func(K, K) bool)
+(*HashTable[K, V], error)`,
 `Set(K, V) (V, bool)`, `SetResizing(K, V) (V, bool)`, `Get(K) (V, bool)`,
 `Remove(K) (V, bool)`, `Contains(K) bool`, `Len() int`, `Cap() int`, and
 `IsEmpty() bool`.
 
 ## Contract
-- `NewHashTable` requires a nonzero initial capacity. Standard callers use
-  `10`; an invalid capacity must be rejected without creating a table.
+- `NewHashTable` requires a positive initial capacity and non-nil `hash` and
+  `equal` functions. It returns `ErrInvalidCapacity`, `ErrNilHash`, or
+  `ErrNilEqual` without creating a table. Standard callers use `10`.
 - Both set methods insert a new key or replace an equal key's value while
   retaining the first stored key. Their boolean reports whether a prior value
   was returned.
@@ -23,7 +25,8 @@ Generic `type HashTable[K any, V any]` with
   factor. If so, it doubles capacity and rehashes every entry with
   `hash(key) % newCapacity` before insertion. A failed allocation preserves
   the table, capacity, and result.
-- Absent lookups and removals do not mutate. Different keys with equal hashes
+- Absent lookups and removals return `ok=false`, not an error, and do not
+  mutate. Different keys with equal hashes
   remain correct. Do not use Go maps.
 
 ## Complexity Targets

@@ -4,10 +4,12 @@
 Grow a sorted prefix, shifting strictly greater items right before each insertion.
 
 ## Required API
-`func InsertionSort[T any](items []T, compare func(T,T) int) bool`.
+`func InsertionSort[T any](items []T, compare func(T,T) int) error`.
 
 ## Contract
-Sort ascending in place and remain stable by inserting after equals. Empty/singleton input is a no-op. Do not call `sort`.
+Sort ascending in place and remain stable by inserting after equals.
+Empty/singleton input is a no-op. A nil comparator returns `ErrNilComparator`
+without changing input. Do not call `sort`.
 
 ## Complexity Targets
 Best O(n), average/worst O(n^2), O(1) space.

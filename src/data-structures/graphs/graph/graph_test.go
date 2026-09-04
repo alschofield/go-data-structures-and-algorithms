@@ -2,7 +2,10 @@
 
 package graph
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestGraphContract(t *testing.T) {
 	var _ Graph = graphFixture{}
@@ -12,14 +15,14 @@ func TestGraphContract(t *testing.T) {
 	}
 
 	var got []edge
-	if !graph.Neighbors(0, func(to int, weight int64) bool {
+	if complete, err := graph.Neighbors(0, func(to int, weight int64) bool {
 		got = append(got, edge{to, weight})
 		return true
-	}) || len(got) != 2 || got[0] != (edge{1, 7}) || got[1] != (edge{2, -3}) {
+	}); err != nil || !complete || len(got) != 2 || got[0] != (edge{1, 7}) || got[1] != (edge{2, -3}) {
 		t.Fatal("Neighbors must visit each outgoing weighted edge in order")
 	}
-	if graph.Neighbors(3, func(int, int64) bool { return true }) {
-		t.Fatal("Neighbors must reject an out-of-range vertex")
+	if _, err := graph.Neighbors(3, func(int, int64) bool { return true }); !errors.Is(err, ErrInvalidVertex) {
+		t.Fatalf("invalid vertex error = %v, want ErrInvalidVertex", err)
 	}
 }
 
@@ -34,14 +37,14 @@ type graphFixture struct {
 
 func (g graphFixture) Directed() bool   { return g.directed }
 func (g graphFixture) VertexCount() int { return len(g.edges) }
-func (g graphFixture) Neighbors(vertex int, visit func(int, int64) bool) bool {
+func (g graphFixture) Neighbors(vertex int, visit func(int, int64) bool) (bool, error) {
 	if vertex < 0 || vertex >= len(g.edges) {
-		return false
+		return false, ErrInvalidVertex
 	}
 	for _, edge := range g.edges[vertex] {
 		if !visit(edge.to, edge.weight) {
 			break
 		}
 	}
-	return true
+	return true, nil
 }

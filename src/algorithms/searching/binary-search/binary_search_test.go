@@ -2,7 +2,10 @@
 
 package binary_search
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestBinarySearch(t *testing.T) {
 	compare := func(a, b int) int { return a - b }
@@ -11,12 +14,15 @@ func TestBinarySearch(t *testing.T) {
 		key int
 		ok  bool
 	}{{1, true}, {3, true}, {8, true}, {4, false}} {
-		index, ok := BinarySearch(items, test.key, compare)
-		if ok != test.ok || (ok && items[index] != test.key) {
-			t.Fatalf("key %d: got (%d, %t)", test.key, index, ok)
+		index, ok, err := BinarySearch(items, test.key, compare)
+		if err != nil || ok != test.ok || (ok && items[index] != test.key) {
+			t.Fatalf("key %d: got (%d, %t, %v)", test.key, index, ok, err)
 		}
 	}
-	if _, ok := BinarySearch([]int(nil), 1, compare); ok {
+	if _, ok, err := BinarySearch([]int(nil), 1, compare); err != nil || ok {
 		t.Fatal("empty input must be absent")
+	}
+	if _, _, err := BinarySearch(items, 1, nil); !errors.Is(err, ErrNilComparator) {
+		t.Fatalf("nil comparator error = %v, want ErrNilComparator", err)
 	}
 }

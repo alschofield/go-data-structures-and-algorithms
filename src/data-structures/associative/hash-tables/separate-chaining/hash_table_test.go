@@ -2,12 +2,15 @@
 
 package separate_chaining
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestHashTable(t *testing.T) {
 	equal := func(a, b string) bool { return a == b }
-	table := NewHashTable[string, int](2, func(string) uint { return 0 }, equal)
-	if table == nil {
+	table, err := NewHashTable[string, int](2, func(string) uint { return 0 }, equal)
+	if err != nil || table == nil {
 		t.Fatal("nonzero capacity must create table")
 	}
 	table.Set("a", 1)
@@ -24,5 +27,8 @@ func TestHashTable(t *testing.T) {
 	}
 	if got, ok := table.Get("b"); !ok || got != 2 {
 		t.Fatal("rehash must retain collision-chain entries")
+	}
+	if _, err := NewHashTable[string, int](0, func(string) uint { return 0 }, equal); !errors.Is(err, ErrInvalidCapacity) {
+		t.Fatalf("zero capacity error = %v, want ErrInvalidCapacity", err)
 	}
 }

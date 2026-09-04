@@ -2,10 +2,16 @@
 
 package binary_search_tree
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestBinarySearchTree(t *testing.T) {
-	tree := NewBinarySearchTree(func(a, b int) int { return a - b })
+	tree, err := NewBinarySearchTree(func(a, b int) int { return a - b })
+	if err != nil {
+		t.Fatalf("constructor error = %v", err)
+	}
 	for _, value := range []int{4, 2, 6, 1, 3, 5, 7} {
 		if !tree.Insert(value) {
 			t.Fatal("distinct insert failed")
@@ -23,5 +29,8 @@ func TestBinarySearchTree(t *testing.T) {
 		if got[index] != want {
 			t.Fatalf("in-order = %v", got)
 		}
+	}
+	if _, err := NewBinarySearchTree[int](nil); !errors.Is(err, ErrNilComparator) {
+		t.Fatalf("nil comparator error = %v, want ErrNilComparator", err)
 	}
 }

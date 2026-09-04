@@ -4,13 +4,14 @@
 A FIFO frontier explores every vertex at distance k before distance k+1.
 
 ## Required API
-`func BreadthFirstSearch(graph graph.Graph, source int) ([]int, bool)`.
+`func BreadthFirstSearch(graph graph.Graph, source int) ([]int, error)`.
 
 ## Contract
-Mark vertices visited when enqueueing, visit each reachable vertex exactly once,
-reject an invalid source, handle cycles/self-loops/disconnected graphs, and
-never mutate the graph. Traverse through `Graph.Neighbors` but ignore every
-edge weight. Return vertex indexes in visit order. Do not use a library graph
+Mark vertices visited when enqueueing and visit each reachable vertex exactly
+once. Return `ErrNilGraph` for a nil graph and `ErrInvalidVertex` for an invalid
+source; propagate malformed-neighbor errors from `Graph.Neighbors`. Handle
+cycles/self-loops/disconnected graphs, never mutate the graph, and ignore edge
+weights. Return vertex indexes in visit order. Do not use a library graph
 traversal.
 
 ## Complexity Targets

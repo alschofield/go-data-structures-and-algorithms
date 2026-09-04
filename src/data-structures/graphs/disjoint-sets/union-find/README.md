@@ -4,10 +4,16 @@
 Parent-pointer trees represent sets; path compression and union by rank keep them nearly flat.
 
 ## Required API
-`type UnionFind` with `NewUnionFind(elementCount int)`, `Find(int) (int,bool)`, `Union(int,int) (bool,bool)`, `Connected(int,int) (bool,bool)`, and `SetCount() int`.
+`type UnionFind` with `NewUnionFind(elementCount int) (*UnionFind, error)`,
+`Find(int) (int,bool,error)`, `Union(int,int) (bool,error)`, `Connected(int,int)
+(bool,error)`, and `SetCount() int`.
 
 ## Contract
-Elements are `[0,n)` and start singleton. Find compresses paths; Union uses rank/size and does not alter rank/count for existing connections. Only representative equality is observable. Do not use a library disjoint-set type.
+`NewUnionFind` returns `ErrInvalidCapacity` for a negative element count.
+Elements are `[0,n)` and start singleton; an out-of-range element returns
+`ErrInvalidIndex`. Find compresses paths; Union returns `false, nil` for an
+existing connection and does not alter rank/count. Only representative equality
+is observable. Do not use a library disjoint-set type.
 
 ## Complexity Targets
 Find/Union/Connected amortized O(alpha(n)); construction O(n); O(n) space.

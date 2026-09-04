@@ -9,11 +9,13 @@ components. The result is a minimum spanning forest.
 ## Required API
 
 `type Edge struct { From, To int; Weight int64 }` and
-`func KruskalMinimumSpanningForest(graph graph.Graph) ([]Edge, int64, bool)`.
+`func KruskalMinimumSpanningForest(graph graph.Graph) ([]Edge, int64, error)`.
 
 ## Contract
 
-- Reject a directed graph without partial output.
+- Return `ErrNilGraph` for a nil graph and `ErrDirectedGraph` for a directed
+  graph without partial output; propagate malformed-neighbor errors from
+  `Graph.Neighbors`.
 - Consider every logical undirected edge exactly once, even though each graph
   representation stores it in both directions.
 - Return a minimum spanning forest for disconnected input, with no cycles and
