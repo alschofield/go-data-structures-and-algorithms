@@ -45,9 +45,10 @@ algorithms operate only on that `Graph` interface.
 
 ## Status
 
-All 28 leaves are intentionally contract-only. Production Go source under
-`src/` belongs to the learner. A leaf becomes available to contract tests only
-after its documented API has been implemented.
+All 28 leaves include user-owned package-only production source scaffolds under
+`src/`. These files intentionally contain only their package declaration;
+implementations remain the learner's responsibility. A leaf becomes available
+to contract tests only after its documented API has been implemented.
 
 ## TDD Workflow
 
