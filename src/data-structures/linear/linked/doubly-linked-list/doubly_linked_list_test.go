@@ -1,7 +1,35 @@
+//go:build contract
+
 package doubly_linked_list
 
 import "testing"
 
-func TestDoublyLinkedListContract(t *testing.T) {
-	t.Fatal("implement DoublyLinkedList as specified in README.md")
+func TestDoublyLinkedList(t *testing.T) {
+	list := NewDoublyLinkedList[int]()
+	list.PushBack(2)
+	list.PushFront(1)
+	list.PushBack(3)
+	if !list.Insert(1, 9) {
+		t.Fatal("valid insert failed")
+	}
+	for index, want := range []int{1, 9, 2, 3} {
+		if got, ok := list.Get(index); !ok || got != want {
+			t.Fatalf("Get(%d) = (%d, %t), want (%d, true)", index, got, ok, want)
+		}
+	}
+	for _, want := range []int{1, 3, 9, 2} {
+		var got int
+		var ok bool
+		if want == 1 || want == 9 {
+			got, ok = list.PopFront()
+		} else {
+			got, ok = list.PopBack()
+		}
+		if !ok || got != want {
+			t.Fatalf("end removal = (%d, %t), want (%d, true)", got, ok, want)
+		}
+	}
+	if !list.IsEmpty() {
+		t.Fatal("final removal must clear both ends")
+	}
 }

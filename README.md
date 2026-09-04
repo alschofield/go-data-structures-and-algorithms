@@ -1,9 +1,9 @@
 # Data Structures and Algorithms in Go
 
-This repository mirrors the canonical C curriculum's 27-leaf taxonomy. Each
-leaf contains a Go API contract and a generated test scaffold. Implement every
-exercise from first principles; do not substitute standard-library containers,
-sorts, searches, or graph algorithms.
+This repository mirrors the canonical C curriculum's 28-leaf taxonomy. Each
+leaf contains an API contract, opt-in table-driven TDD tests, and a benchmark
+plan. Implement every exercise from first principles; do not substitute
+standard-library containers, maps, heaps, sorts, searches, or graph algorithms.
 
 ## Taxonomy
 
@@ -17,7 +17,7 @@ src/data-structures/associative/hash-tables/separate-chaining
 src/data-structures/trees/binary-search-trees/binary-search-tree
 src/data-structures/trees/tries/prefix-trie
 src/data-structures/trees/heaps/binary-heap
-src/data-structures/graphs/graph-view
+src/data-structures/graphs/graph
 src/data-structures/graphs/representations/adjacency-list
 src/data-structures/graphs/representations/adjacency-matrix
 src/data-structures/graphs/disjoint-sets/union-find
@@ -35,12 +35,45 @@ src/algorithms/graph-traversal/breadth-first-search
 src/algorithms/graph-traversal/depth-first-search
 src/algorithms/shortest-paths/dijkstra
 src/algorithms/shortest-paths/a-star
+src/algorithms/minimum-spanning-trees/kruskal
 ```
+
+`graph` defines the representation-neutral graph contract. Adjacency list and
+matrix retain ownership of values and storage, then expose their dense indexed
+view through `AsGraph()`. Traversal, shortest-path, and spanning-tree
+algorithms operate only on that `Graph` interface.
+
+## Status
+
+All 28 leaves are intentionally contract-only. Production Go source under
+`src/` belongs to the learner. A leaf becomes available to contract tests only
+after its documented API has been implemented.
+
+## TDD Workflow
+
+Default tests deliberately exclude unfinished contract tests, so a fresh clone
+remains usable. After implementing a leaf, compile and run its contracts:
+
+```sh
+make contract NAME=data-structures/linear/stacks/stack
+make contract NAME=algorithms/graph-traversal/breadth-first-search
+```
+
+The `contract` build tag is intentional, not an implementation escape hatch:
+remove no tags from the tests. The learner's production API makes the test
+package compile; the behavioral assertions then drive the implementation.
 
 ## Commands
 
 ```sh
-go test ./...
+make test NAME=data-structures/linear/stacks/stack
+make test-all
+make contract NAME=data-structures/linear/stacks/stack
+make benchmark NAME=data-structures/linear/stacks/stack
+make race
+make benchmark-compare OLD=before.txt NEW=after.txt
 ```
 
-The test scaffolds intentionally fail until their production API is written.
+`make test` and `make test-all` are safe before any exercise is implemented.
+`make contract` and `make benchmark` require the named leaf's production API.
+See [bench/README.md](bench/README.md) for benchmark design and all leaf plans.
