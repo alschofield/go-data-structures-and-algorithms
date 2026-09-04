@@ -1,14 +1,23 @@
 # Data Structures and Algorithms in Go
 
-This repository mirrors the canonical C curriculum's 28-leaf taxonomy. Each
-leaf contains an API contract, opt-in table-driven TDD tests, and a benchmark
-plan. Implement every exercise from first principles; do not substitute
-standard-library containers, maps, heaps, sorts, searches, or graph algorithms.
+This repository follows the canonical C curriculum with a 27-leaf Go taxonomy.
+Each leaf contains an API contract, opt-in table-driven TDD tests, and a
+benchmark plan. Implement every exercise from first principles; do not
+substitute standard-library containers, maps, heaps, sorts, searches, or graph
+algorithms.
+
+## Dynamic Sequence Policy
+
+The C curriculum implements a dynamic array. Higher-level language curricula
+use their native dynamic sequence as the baseline rather than duplicate a
+runtime container: Go slice, C++ vector, Java ArrayList, Rust Vec, Python list,
+TypeScript array, C# List<T>, and Kotlin MutableList. Therefore, Go has no
+dynamic-array exercise; slices are the baseline for exercises that require
+dynamic contiguous storage.
 
 ## Taxonomy
 
 ```text
-src/data-structures/linear/arrays/dynamic-array
 src/data-structures/linear/stacks/stack
 src/data-structures/linear/queues/queue
 src/data-structures/linear/linked/singly-linked-list
@@ -53,7 +62,7 @@ unfinished production declaration during default validation.
 
 ## Status
 
-All 28 leaves include user-owned package-only production source scaffolds under
+All 27 leaves include user-owned package-only production source scaffolds under
 `src/`. These files intentionally contain only their package declaration;
 implementations remain the learner's responsibility. A leaf becomes available
 to contract tests only after its documented API has been implemented.

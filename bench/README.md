@@ -4,6 +4,8 @@ Benchmarks use Go's standard `testing.B` runner. They are regression evidence
 for one machine and toolchain, not portable speed claims or proof of Big-O.
 Never replace a learning implementation with a standard-library container,
 `container/heap`, `sort`, `slices`, or a graph algorithm to improve a result.
+Go slices are the native dynamic-sequence baseline, not a dynamic-array
+exercise, and therefore have no standalone benchmark plan.
 
 ## Running And Comparing
 
@@ -28,7 +30,6 @@ or recover from a panic as an invalid-input outcome.
 
 | Leaf | Benchmark subcases |
 | --- | --- |
-| dynamic-array | append growth; middle insert/remove; indexed get |
 | stack | push growth; pop; peek |
 | queue | enqueue/dequeue wraparound; peek |
 | singly-linked-list | front operations; tail operations; middle lookup |
