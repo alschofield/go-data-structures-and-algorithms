@@ -9,13 +9,17 @@ outcome is represented by the operation's ordinary result.
 - A successful call returns `nil` as its final error.
 - An expected miss or empty read is not an error: use the documented `ok=false`
   or zero/empty result. Examples include a missing search key, missing hash
-  key, empty stack or queue, absent trie key, and an unreachable path.
+  key, absent trie key, and an unreachable path. Stack and queue empty reads are
+  deliberate exceptions: they return documented `ErrEmptyStack` or
+  `ErrEmptyQueue` sentinels so callers can distinguish an empty collection from
+  a stored zero value.
 - Invalid indexes, invalid constructor parameters, nil required callbacks,
   malformed graph inputs, unsupported directed input, and rejected numeric
   constraints return an error and leave caller-owned input and receiver state
   unchanged unless the leaf explicitly documents otherwise.
 - APIs that can distinguish a normal miss from invalid input place `error`
-  last, for example `(T, bool, error)` or `(int, bool, error)`.
+  last, for example `(int, bool, error)`. When an operation has only success or
+  an error, use `(T, error)` rather than a redundant `(T, bool, error)`.
 - Define exported sentinel errors only when callers can act on a stable failure
   class. Name them `Err` plus the condition, such as `ErrInvalidIndex`,
   `ErrInvalidCapacity`, `ErrNilComparator`, `ErrInvalidVertex`, and
