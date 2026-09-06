@@ -22,7 +22,7 @@ src/data-structures/linear/stacks/stack
 src/data-structures/linear/queues/queue
 src/data-structures/linear/linked/singly-linked-list
 src/data-structures/linear/linked/doubly-linked-list
-src/data-structures/associative/hash-tables/separate-chaining
+src/data-structures/associative/hash-table
 src/data-structures/trees/binary-search-trees/binary-search-tree
 src/data-structures/trees/tries/prefix-trie
 src/data-structures/trees/heaps/binary-heap

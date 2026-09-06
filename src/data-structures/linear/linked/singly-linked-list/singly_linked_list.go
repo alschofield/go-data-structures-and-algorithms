@@ -5,7 +5,7 @@ import (
 )
 
 // ErrInvalidIndex reports an index outside the range accepted by Get, Insert, or Remove.
-var ErrInvalidIndex = errors.New("function requires a correct index.")
+var ErrInvalidIndex = errors.New("function requires a valid index.")
 
 // Node holds one value and a link to the following node in the list.
 type Node[T any] struct {
