@@ -56,6 +56,25 @@ func TestSelectionSortNilComparatorDoesNotMutate(t *testing.T) {
 	}
 }
 
+func TestSelectionSortGenericComparator(t *testing.T) {
+	type record struct {
+		name string
+		age  int
+	}
+	items := []record{{"Ada", 36}, {"Grace", 28}, {"Linus", 54}, {"Ken", 28}}
+	compareByAge := func(left, right record) int { return left.age - right.age }
+
+	ok, err := SelectionSort(items, compareByAge)
+	if err != nil || !ok {
+		t.Fatalf("SelectionSort() = (%t, %v), want (true, nil)", ok, err)
+	}
+	for index, age := range []int{28, 28, 36, 54} {
+		if items[index].age != age {
+			t.Fatalf("SelectionSort() item at index %d has age %d, want %d", index, items[index].age, age)
+		}
+	}
+}
+
 func compareInts(left, right int) int {
 	if left < right {
 		return -1

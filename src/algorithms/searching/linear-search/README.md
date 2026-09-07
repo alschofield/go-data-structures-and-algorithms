@@ -31,5 +31,15 @@ Run it with:
 go test -tags=contract -run '^$' -bench BenchmarkLinearSearchPresentLast -benchmem ./src/algorithms/searching/linear-search
 ```
 
-No local timing figures are recorded here because benchmark results depend on
-the machine, Go version, and current system load.
+Measured once with Go 1.25.5 on Windows/amd64 (11th Gen Intel Core i9-11900K
+@ 3.50GHz):
+
+| Input size | ns/op | B/op | allocs/op |
+| ---: | ---: | ---: | ---: |
+| 1,000 | 607.0 | 0 | 0 |
+| 16,000 | 9,461 | 0 | 0 |
+| 1,000,000 | 681,579 | 0 | 0 |
+
+These are machine-specific regression evidence, not portable performance
+claims. The final-element workload intentionally shows the linear growth of a
+complete scan.
