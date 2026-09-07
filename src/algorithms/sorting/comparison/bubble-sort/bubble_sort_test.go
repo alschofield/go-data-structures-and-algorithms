@@ -2,19 +2,37 @@
 
 package bubble_sort
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
-func TestBubbleSort(t *testing.T) { testComparisonSort(t, BubbleSort[int]) }
+func TestBubbleSort(t *testing.T) { testComparisonSort(t, BubbleSort[int], ErrNilComparator) }
 
-func testComparisonSort(t *testing.T, sort func([]int, func(int, int) int) error) {
+func testComparisonSort(t *testing.T, sort func([]int, func(int, int) int) (bool, error), nilComparatorError error) {
+	t.Helper()
+
 	for _, test := range [][]int{{}, {1}, {3, 1, 2}, {3, 2, 1}, {2, 2, 1}} {
-		if err := sort(test, func(a, b int) int { return a - b }); err != nil {
-			t.Fatalf("sort error = %v", err)
+		ok, err := sort(test, func(a, b int) int { return a - b })
+		if !ok || err != nil {
+			t.Fatalf("sort() = (%t, %v), want (true, nil)", ok, err)
 		}
 		for i := 1; i < len(test); i++ {
 			if test[i-1] > test[i] {
 				t.Fatalf("not sorted: %v", test)
 			}
+		}
+	}
+
+	items := []int{3, 1, 2}
+	want := append([]int(nil), items...)
+	ok, err := sort(items, nil)
+	if ok || !errors.Is(err, nilComparatorError) {
+		t.Fatalf("sort(nil comparator) = (%t, %v), want (false, ErrNilComparator)", ok, err)
+	}
+	for i := range items {
+		if items[i] != want[i] {
+			t.Fatalf("nil comparator mutated items to %v, want %v", items, want)
 		}
 	}
 }
