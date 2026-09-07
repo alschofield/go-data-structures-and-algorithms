@@ -11,10 +11,10 @@ func BubbleSort[T any](items []T, compare func(T, T) int) (bool, error) {
 		return false, ErrNilComparator
 	}
 
-	for i := 0; i < len(items); i++ {
-		for j := i; j < len(items); j++ {
-			if compare(items[j], items[j+1]) < 0 {
-				items[j+1], items[j] = items[j], items[j+1]
+	for end := len(items) - 1; end > 0; end-- {
+		for i := 0; i < end; i++ {
+			if compare(items[i], items[i+1]) > 0 {
+				items[i+1], items[i] = items[i], items[i+1]
 			}
 		}
 	}
