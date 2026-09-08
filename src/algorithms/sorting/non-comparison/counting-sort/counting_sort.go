@@ -11,7 +11,7 @@ func CountingSort(items []uint32, keyLimit uint32) (bool, error) {
 		return false, ErrKeyOutOfRange
 	}
 
-	var keys []int
+	var keys []int = make([]int, len(items))
 	for i := 0; i < len(items); i++ {
 		keys[items[i]]++
 	}
