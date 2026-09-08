@@ -32,3 +32,12 @@ func TestMergeSort(t *testing.T) {
 		}
 	}
 }
+
+func TestMergeSortPreservesEqualOrder(t *testing.T) {
+	type item struct{ key, order int }
+	items := []item{{2, 0}, {1, 1}, {2, 2}}
+	_, err := MergeSort(items, func(left, right item) int { return left.key - right.key })
+	if err != nil || items[1].order != 0 || items[2].order != 2 {
+		t.Fatalf("MergeSort() did not preserve equal order: %#v", items)
+	}
+}

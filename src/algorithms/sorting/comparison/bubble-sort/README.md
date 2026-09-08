@@ -14,3 +14,8 @@ Success returns `(true, nil)`. A nil comparator returns
 
 ## Complexity Targets
 Best O(n), average/worst O(n^2), O(1) space.
+
+## Verification
+`make contract NAME=algorithms/sorting/comparison/bubble-sort`
+
+`go test -tags=contract -bench=. ./src/algorithms/sorting/comparison/bubble-sort`

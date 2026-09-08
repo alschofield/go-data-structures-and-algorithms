@@ -9,6 +9,15 @@ import (
 
 func TestBubbleSort(t *testing.T) { testComparisonSort(t, BubbleSort[int], ErrNilComparator) }
 
+func TestBubbleSortPreservesEqualOrder(t *testing.T) {
+	type item struct{ key, order int }
+	items := []item{{2, 0}, {1, 1}, {2, 2}}
+	_, err := BubbleSort(items, func(left, right item) int { return left.key - right.key })
+	if err != nil || items[1].order != 0 || items[2].order != 2 {
+		t.Fatalf("BubbleSort() did not preserve equal order: %#v", items)
+	}
+}
+
 func testComparisonSort(t *testing.T, sort func([]int, func(int, int) int) (bool, error), nilComparatorError error) {
 	t.Helper()
 

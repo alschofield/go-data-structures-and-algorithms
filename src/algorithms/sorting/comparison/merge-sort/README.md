@@ -13,3 +13,8 @@ singleton, and uneven halves. Do not call `sort`.
 
 ## Complexity Targets
 Best/average/worst O(n log n), O(n) buffer plus O(log n) recursion space.
+
+## Verification
+`make contract NAME=algorithms/sorting/comparison/merge-sort`
+
+`go test -tags=contract -bench=. ./src/algorithms/sorting/comparison/merge-sort`
