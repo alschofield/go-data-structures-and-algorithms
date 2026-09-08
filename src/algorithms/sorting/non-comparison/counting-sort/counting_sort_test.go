@@ -12,7 +12,7 @@ func TestCountingSort(t *testing.T) {
 		items []uint32
 		limit uint32
 		valid bool
-	}{{[]uint32{3, 1, 2, 1}, 4, true}, {[]uint32{3, 4}, 4, false}} {
+	}{{[]uint32{}, 0, true}, {[]uint32{3, 1, 2, 1}, 4, true}, {[]uint32{3, 3, 3}, 4, true}, {[]uint32{0, 3, 1}, 4, true}, {[]uint32{3, 4}, 4, false}, {[]uint32{0}, 0, false}} {
 		original := append([]uint32(nil), test.items...)
 		ok, err := CountingSort(test.items, test.limit)
 		if test.valid && (!ok || err != nil) {
