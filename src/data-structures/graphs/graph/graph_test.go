@@ -24,6 +24,17 @@ func TestGraphContract(t *testing.T) {
 	if _, err := graph.Neighbors(3, func(int, int64) bool { return true }); !errors.Is(err, ErrInvalidVertex) {
 		t.Fatalf("invalid vertex error = %v, want ErrInvalidVertex", err)
 	}
+	if _, err := graph.Neighbors(-1, func(int, int64) bool { return true }); !errors.Is(err, ErrInvalidVertex) {
+		t.Fatalf("negative vertex error = %v, want ErrInvalidVertex", err)
+	}
+
+	visits := 0
+	if complete, err := graph.Neighbors(0, func(int, int64) bool {
+		visits++
+		return false
+	}); err != nil || complete || visits != 1 {
+		t.Fatalf("early stop = (complete=%t, visits=%d, err=%v), want (false, 1, nil)", complete, visits, err)
+	}
 }
 
 type edge struct {
@@ -43,7 +54,7 @@ func (g graphFixture) Neighbors(vertex int, visit func(int, int64) bool) (bool, 
 	}
 	for _, edge := range g.edges[vertex] {
 		if !visit(edge.to, edge.weight) {
-			break
+			return false, nil
 		}
 	}
 	return true, nil

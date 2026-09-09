@@ -11,12 +11,22 @@
   `ErrInvalidVertex` for an out-of-range vertex, visits each outgoing weighted
   edge once in deterministic order, and stops when its visitor returns false.
   Its boolean reports whether iteration completed rather than an input error.
-- `Directed` describes the graph rather than its adapter. Adjacency-list and
-  adjacency-matrix implementations expose `AsGraph() Graph`; the interface
-  neither owns nor mutates their storage and never exposes values or handles.
+- `Directed` describes the graph rather than its storage. Adjacency-list and
+  adjacency-matrix structs implement `Graph` directly; the interface neither
+  owns nor mutates their storage and never exposes values or handles.
 - Edge weights use `int64`. Traversal ignores them; Dijkstra and A-star reject
   negative weights; Kruskal accepts signed weights for an undirected graph.
 
 ## Complexity Targets
 
 VertexCount is O(1); neighbor iteration matches the adapted representation.
+
+## Algorithm Consumers
+
+- BFS, DFS, Dijkstra, and A-star accept `Graph`.
+- Kruskal additionally needs an edge-enumeration interface so an undirected edge
+  is reported once rather than reconstructed from every neighbor list.
+
+## Verification
+
+`make contract NAME=data-structures/graphs/graph`
