@@ -162,3 +162,51 @@ func (b *BinarySearchTree[T]) Len() int {
 func (b *BinarySearchTree[T]) IsEmpty() bool {
 	return b.size == 0
 }
+
+func (b *BinarySearchTree[T]) Directed() bool {
+	return true
+}
+
+func (b *BinarySearchTree[T]) NodeCount() int {
+	return b.Len()
+}
+
+func (b *BinarySearchTree[T]) NodeByKey(key int) (*graph.Node[T], bool, error) {
+	if key >= b.Len() {
+		return nil, false, graph.ErrInvalidKey
+	}
+
+	var n int = 0
+	var node *graph.Node[T] = nil
+	b.InOrder(func(visitor *graph.Node[T]) bool {
+		n++
+
+		if n == key {
+			node = visitor
+			return false
+		} else {
+			return true
+		}
+	})
+
+	return node, node == nil, nil
+}
+
+func (b *BinarySearchTree[T]) Neighbors(key int, visit func(*graph.Node[T], int64) bool) (bool, error) {
+	if key >= b.Len() {
+		return false, graph.ErrInvalidKey
+	}
+
+	// how is this supposed to work?
+	// traverse to the node at key?
+	// then visit each neighbor? left and right? and should it visit parent?
+	// this brings up a ethical conversation around if a BSTs nodes
+	// 		should keep track of who their parent is.
+	// some might say, i think myself included, that it should not just for integrity of the game
+	// but in practice if it saves time at no tradeoff
+	// 		we'd be a fool to not support it
+	// 		although even if you keep track of the parent
+	// 		youd still have to traverse InOrder
+
+	return false, nil
+}
