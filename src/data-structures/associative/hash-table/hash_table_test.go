@@ -66,7 +66,7 @@ func TestHashTableReplacementRetainsOriginalKey(t *testing.T) {
 	if old, replaced := table.Set(replacement, 2); !replaced || old != 1 {
 		t.Fatalf("Set replacement = (%d, %t), want (1, true)", old, replaced)
 	}
-	if got := table.items[0].key; got != original {
+	if got := table.items[0].Value.key; got != original {
 		t.Fatalf("stored key = %#v, want original %#v", got, original)
 	}
 	if got, ok := table.Get(replacement); !ok || got != 2 {

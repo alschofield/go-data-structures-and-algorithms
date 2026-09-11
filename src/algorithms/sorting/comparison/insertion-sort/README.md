@@ -14,3 +14,14 @@ not call `sort`.
 
 ## Complexity Targets
 Best O(n), average/worst O(n^2), O(1) space.
+
+## Verification
+
+```sh
+make contract NAME=algorithms/sorting/comparison/insertion-sort
+go test -tags=contract -run '^$' -bench=InsertionSort -benchmem ./src/algorithms/sorting/comparison/insertion-sort
+```
+
+The benchmark covers sorted, nearly-sorted, and reverse integer inputs at 256
+and 1,024 items. Each iteration restores a preallocated slice from the named
+input before sorting, and the final output is checked after the benchmark loop.

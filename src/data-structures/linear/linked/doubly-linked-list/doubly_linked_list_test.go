@@ -5,6 +5,8 @@ package doubly_linked_list
 import (
 	"errors"
 	"testing"
+
+	graph "github.com/alschofield/go-data-structures-and-algorithms/src/data-structures/graphs/graph"
 )
 
 func TestDoublyLinkedListEndOperationsEmptyOneAndManyNodes(t *testing.T) {
@@ -207,7 +209,7 @@ func listOf(values ...int) *DoublyLinkedList[int] {
 	return list
 }
 
-func assertUnchanged(t *testing.T, list *DoublyLinkedList[int], head, tail *Node[int], size int, want []int) {
+func assertUnchanged(t *testing.T, list *DoublyLinkedList[int], head, tail *graph.Node[int], size int, want []int) {
 	t.Helper()
 	if list.head != head || list.tail != tail || list.size != size {
 		t.Fatal("operation mutated list metadata on failure")
@@ -232,7 +234,7 @@ func assertListState(t *testing.T, list *DoublyLinkedList[int], want []int) {
 	if list.head == nil || list.tail == nil {
 		t.Fatal("non-empty list must have head and tail")
 	}
-	if list.head.prev != nil || list.tail.next != nil {
+	if list.head.Prev != nil || list.tail.Next != nil {
 		t.Fatal("head.prev and tail.next must be nil")
 	}
 
@@ -241,13 +243,13 @@ func assertListState(t *testing.T, list *DoublyLinkedList[int], want []int) {
 		if forward == nil {
 			t.Fatalf("forward traversal ended at index %d", index)
 		}
-		if forward.value != value {
-			t.Fatalf("forward value at index %d = %d, want %d", index, forward.value, value)
+		if forward.Value == nil || *forward.Value != value {
+			t.Fatalf("forward value at index %d = %v, want %d", index, forward.Value, value)
 		}
-		if forward.next != nil && forward.next.prev != forward {
+		if forward.Next != nil && forward.Next.Prev != forward {
 			t.Fatalf("forward link at index %d is not reciprocal", index)
 		}
-		forward = forward.next
+		forward = forward.Next
 	}
 	if forward != nil {
 		t.Fatal("forward traversal contains more nodes than Len()")
@@ -258,13 +260,13 @@ func assertListState(t *testing.T, list *DoublyLinkedList[int], want []int) {
 		if backward == nil {
 			t.Fatalf("backward traversal ended at index %d", index)
 		}
-		if backward.value != want[index] {
-			t.Fatalf("backward value at index %d = %d, want %d", index, backward.value, want[index])
+		if backward.Value == nil || *backward.Value != want[index] {
+			t.Fatalf("backward value at index %d = %v, want %d", index, backward.Value, want[index])
 		}
-		if backward.prev != nil && backward.prev.next != backward {
+		if backward.Prev != nil && backward.Prev.Next != backward {
 			t.Fatalf("backward link at index %d is not reciprocal", index)
 		}
-		backward = backward.prev
+		backward = backward.Prev
 	}
 	if backward != nil {
 		t.Fatal("backward traversal contains more nodes than Len()")

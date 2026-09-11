@@ -11,8 +11,9 @@ Generic `type BinaryHeap[T any]` with
 ## Contract
 `NewBinaryHeap` returns `ErrNilComparator` for a nil comparator. Push appends
 then sifts up; Pop and Peek on an empty heap return `ok=false`, not an error.
-Equal priorities have no stable ordering. Grow geometrically; use no node
-allocation or library heap.
+Equal priorities have no stable ordering. Grow geometrically using a contiguous
+slice of shared `*graph.Node[T]` records; implicit child positions use `2i+1`
+and `2i+2`, so explicit Left and Right links remain unused. Do not use a library heap.
 
 ## Complexity Targets
 Push/Pop O(log n), Peek/Len/IsEmpty O(1), bottom-up heapify O(n), O(n) contiguous space.

@@ -2,22 +2,18 @@ package singly_linked_list
 
 import (
 	"errors"
+
+	graph "github.com/alschofield/go-data-structures-and-algorithms/src/data-structures/graphs/graph"
 )
 
 // ErrInvalidIndex reports an index outside the range accepted by Get, Insert, or Remove.
 var ErrInvalidIndex = errors.New("function requires a valid index.")
 
-// Node holds one value and a link to the following node in the list.
-type Node[T any] struct {
-	value T
-	next  *Node[T]
-}
-
 // SinglyLinkedList tracks the first node and the number of values it contains.
 // It deliberately has no tail pointer, so operations at the back traverse from head.
 type SinglyLinkedList[T any] struct {
 	size int
-	head *Node[T]
+	head *graph.Node[T]
 }
 
 // NewSinglyLinkedList returns an initialized empty list.
@@ -27,7 +23,7 @@ func NewSinglyLinkedList[T any]() *SinglyLinkedList[T] {
 
 // PushFront links a new node before the current head.
 func (ll *SinglyLinkedList[T]) PushFront(value T) bool {
-	var node *Node[T] = &Node[T]{value: value, next: ll.head}
+	var node *graph.Node[T] = &graph.Node[T]{Value: &value, Next: ll.head}
 	ll.head = node
 	ll.size++
 	return true
@@ -41,15 +37,15 @@ func (ll *SinglyLinkedList[T]) PushBack(value T) bool {
 	}
 
 	// Start at head and follow each next link until reaching the tail.
-	var node *Node[T] = ll.head
-	for node.next != nil {
-		node = node.next
+	var node *graph.Node[T] = ll.head
+	for node.Next != nil {
+		node = node.Next
 	}
 
 	// A nil next pointer marks the new node as the tail.
-	var empty *Node[T]
-	var new *Node[T] = &Node[T]{value, empty}
-	node.next = new
+	var empty *graph.Node[T]
+	var new *graph.Node[T] = &graph.Node[T]{Value: &value, Next: empty}
+	node.Next = new
 	ll.size++
 	return true
 }
@@ -63,10 +59,10 @@ func (ll *SinglyLinkedList[T]) PopFront() (T, bool) {
 	}
 
 	// Advance head past the removed node before reducing the recorded size.
-	var node *Node[T] = ll.head
-	ll.head = node.next
+	var node *graph.Node[T] = ll.head
+	ll.head = node.Next
 	ll.size--
-	return node.value, true
+	return *node.Value, true
 }
 
 // PopBack removes and returns the tail value when one exists.
@@ -78,24 +74,24 @@ func (ll *SinglyLinkedList[T]) PopBack() (T, bool) {
 	}
 
 	// Keep a cursor so it can stop at the node immediately before the tail.
-	var node *Node[T] = ll.head
+	var node *graph.Node[T] = ll.head
 	// A one-node list becomes empty after its head is removed.
 	if ll.size == 1 {
 		ll.head = nil
 		ll.size--
-		return node.value, true
+		return *node.Value, true
 	}
 
 	// Stop at the penultimate node, whose next node is the value to remove.
-	for node.next.next != nil {
-		node = node.next
+	for node.Next.Next != nil {
+		node = node.Next
 	}
 
 	// Disconnect the tail so the penultimate node becomes the new tail.
-	var temp = node.next
-	node.next = nil
+	var temp = node.Next
+	node.Next = nil
 	ll.size--
-	return temp.value, true
+	return *temp.Value, true
 }
 
 // Get returns the value at index without changing the list.
@@ -107,12 +103,12 @@ func (ll *SinglyLinkedList[T]) Get(index int) (T, bool, error) {
 	}
 
 	// Walk forward exactly index links from head.
-	var node *Node[T] = ll.head
+	var node *graph.Node[T] = ll.head
 	for i := 0; i < index; i++ {
-		node = node.next
+		node = node.Next
 	}
 
-	return node.value, true, nil
+	return *node.Value, true, nil
 }
 
 // Insert links value at index, allowing index Len() to append.
@@ -128,14 +124,14 @@ func (ll *SinglyLinkedList[T]) Insert(index int, value T) (bool, error) {
 	}
 
 	// Stop at the node that will precede the inserted node.
-	var node *Node[T] = ll.head
+	var node *graph.Node[T] = ll.head
 	for i := 0; i < (index - 1); i++ {
-		node = node.next
+		node = node.Next
 	}
 
 	// Preserve the successor before inserting the new link between the two nodes.
-	var new *Node[T] = &Node[T]{value: value, next: node.next}
-	node.next = new
+	var new *graph.Node[T] = &graph.Node[T]{Value: &value, Next: node.Next}
+	node.Next = new
 	ll.size++
 	return true, nil
 }
@@ -149,24 +145,24 @@ func (ll *SinglyLinkedList[T]) Remove(index int) (T, bool, error) {
 	}
 
 	// Start at head so index zero can update it directly.
-	var node *Node[T] = ll.head
+	var node *graph.Node[T] = ll.head
 	// Removing head advances head to the second node, if any.
 	if index == 0 {
-		ll.head = node.next
+		ll.head = node.Next
 		ll.size--
-		return node.value, true, nil
+		return *node.Value, true, nil
 	}
 
 	// Stop at the node immediately before the one to remove.
 	for i := 0; i < (index - 1); i++ {
-		node = node.next
+		node = node.Next
 	}
 
 	// Bypass the removed node by linking its predecessor to its successor.
-	var temp *Node[T] = node.next
-	node.next = temp.next
+	var temp *graph.Node[T] = node.Next
+	node.Next = temp.Next
 	ll.size--
-	return temp.value, true, nil
+	return *temp.Value, true, nil
 }
 
 // Len returns the number of nodes recorded in the list.

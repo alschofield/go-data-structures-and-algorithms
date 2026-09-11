@@ -2,30 +2,41 @@
 
 ## Required API
 
-`type Graph interface` with `Directed() bool`, `VertexCount() int`, and
-`Neighbors(vertex int, visit func(neighbor int, weight int64) bool) (bool, error)`.
+`type Node[T any]` with `Key`, `Value`, `Next`, `Prev`, `Left`, `Right`,
+`Parent`, `Children`, and `Edges`; `type Edge[T any] struct { From, To
+*Node[T]; Weight int64 }`; and `type Graph[T any] interface` with `Directed()
+bool`, `NodeCount() int`, `NodeByKey(key int) (*Node[T], bool, error)`, and
+`Neighbors(key int, visit func(*Node[T], int64) bool) (bool, error)`.
+
+`type UndirectedEdgeGraph[T any] interface` extends `Graph[T]` with
+`Edges(visit func(Edge[T]) bool) bool`.
 
 ## Contract
 
-- Vertices are dense indexes in `[0, VertexCount())`. `Neighbors` returns
-  `ErrInvalidVertex` for an out-of-range vertex, visits each outgoing weighted
-  edge once in deterministic order, and stops when its visitor returns false.
-  Its boolean reports whether iteration completed rather than an input error.
-- `Directed` describes the graph rather than its storage. Adjacency-list and
-  adjacency-matrix structs implement `Graph` directly; the interface neither
-  owns nor mutates their storage and never exposes values or handles.
+- `Node.Key` is a stable, unique graph identity. Keys may have gaps after node
+  removal and algorithms use them as map keys rather than array indexes.
+- `Node.Value` points to the value retained by the concrete data structure.
+  Node-backed structures reuse this record and leave links irrelevant to their
+  representation nil. Each representation owns its value lifetime and must not
+  substitute a copied or unrelated payload.
+- `NodeByKey` and `Neighbors` return `ErrInvalidKey` for an absent key.
+  `Neighbors` visits outgoing weighted node edges in deterministic order and
+  returns false only when its visitor requests an early stop.
+- Adjacency-list and adjacency-matrix structs implement `Graph[T]` directly.
+  BSTs may implement it as a directed tree view. The interface never owns or
+  mutates representation storage.
+- Undirected representations implement `UndirectedEdgeGraph[T]` by reporting
+  each logical edge once in deterministic order. Kruskal rejects directed
+  graphs before reading edges.
 - Edge weights use `int64`. Traversal ignores them; Dijkstra and A-star reject
-  negative weights; Kruskal accepts signed weights for an undirected graph.
-
-## Complexity Targets
-
-VertexCount is O(1); neighbor iteration matches the adapted representation.
+  negative weights; Kruskal accepts signed weights for undirected graphs.
 
 ## Algorithm Consumers
 
-- BFS, DFS, Dijkstra, and A-star accept `Graph`.
-- Kruskal additionally needs an edge-enumeration interface so an undirected edge
-  is reported once rather than reconstructed from every neighbor list.
+- BFS and DFS accept `Graph[T]` and return visited nodes.
+- Dijkstra and A-star accept `Graph[T]` and use `Node.Key` for their distance
+  and parent state.
+- Kruskal accepts `UndirectedEdgeGraph[T]` and returns `Edge[T]` values.
 
 ## Verification
 

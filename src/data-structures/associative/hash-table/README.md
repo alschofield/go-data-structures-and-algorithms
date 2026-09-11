@@ -7,6 +7,10 @@ each bucket holds a singly linked collision chain. Equal keys share a single
 node. Inserting an equal key replaces only its value, retaining the original
 stored key.
 
+Collision chains use shared `graph.Node[entry[K,V]]` records through `Next`.
+The hash key remains inside the table's entry payload because `Node.Key` is an
+integer identity intended for structures that expose graph-compatible nodes.
+
 `Set` always retains the current bucket count. `SetResizing` doubles the bucket
 array and rehashes every stored key before adding a *new* entry that would make
 the load factor exceed 0.75. It does not resize at exactly 0.75, and a

@@ -1,23 +1,26 @@
 # Adjacency List
 
-## How It Works
-Each dynamically added node owns a list of weighted outgoing edges, so storage follows actual edges.
-
 ## Required API
-`type AdjacencyList` with `NewAdjacencyList(directed bool)`, `AddVertex(value any)
-int`, `VertexAt(index int) (any, bool, error)`, `AddEdge(from, to int, weight
-int64) (bool, error)`, `RemoveEdge(from, to int) (bool, error)`, `HasEdge(from,
-to int) (bool, error)`, `Neighbors(vertex int, func(to int, weight int64) bool)
-(bool, error)`, `VertexCount() int`, `EdgeCount() int`, and `AsGraph() graph.Graph`.
+
+`type AdjacencyList[T any]` with `NewAdjacencyList[T](directed bool)`,
+`AddVertex(value *T) (*graph.Node[T], error)`,
+`NodeByKey(key int) (*graph.Node[T], bool, error)`, `AddEdge(from_key, to_key
+int, weight int64) (bool, error)`, `RemoveEdge(from_key, to_key int) (bool,
+error)`, `HasEdge(from_key, to_key int) (bool, error)`, `Neighbors(key int,
+func(*graph.Node[T], int64) bool) (bool, error)`, `NodeCount() int`, and
+`EdgeCount() int`. It implements `graph.Graph[T]`; undirected instances also
+implement `graph.UndirectedEdgeGraph[T]` with `Edges(func(graph.Edge[T]) bool)
+bool`.
 
 ## Contract
-The constructor creates an empty graph; `AddVertex` returns its stable dense
-index and `VertexAt` uses insertion order. An invalid vertex or edge endpoint
-returns `ErrInvalidVertex` or `ErrInvalidEdge` and preserves graph state.
-Undirected graphs record both directions with the same
-weight. Reject duplicate edges, permit self-loops and negative weights, and
-visit out-edges once in deterministic insertion order. `AsGraph` preserves
-direction, weights, and early-stop behavior. Do not use a library graph type.
+
+`AddVertex` retains the caller-provided value pointer in a node with a stable,
+unique key. Invalid or removed keys return `graph.ErrInvalidKey` and preserve
+state. Undirected graphs store mirrored adjacency but `Edges` reports each
+logical edge once in insertion order. Reject duplicate edges, permit self-loops
+and negative weights, and visit outgoing edges once in insertion order. Do not
+use a library graph type.
 
 ## Complexity Targets
+
 AddVertex and AddEdge amortized O(1); HasEdge/neighbors O(deg(u)); full traversal O(V+E); O(V+E) space.

@@ -5,26 +5,44 @@ package binary_search_tree
 import (
 	"errors"
 	"testing"
+
+	graphcontract "github.com/alschofield/go-data-structures-and-algorithms/src/data-structures/graphs/graph"
 )
 
 func TestBinarySearchTree(t *testing.T) {
-	tree, err := NewBinarySearchTree(func(a, b int) int { return a - b })
+	tree, err := NewBinarySearchTree(func(left, right int) int { return left - right })
 	if err != nil {
 		t.Fatalf("constructor error = %v", err)
 	}
+	var _ graphcontract.Graph[int] = tree
+
+	nodes := make([]*graphcontract.Node[int], 0, 7)
 	for _, value := range []int{4, 2, 6, 1, 3, 5, 7} {
-		if !tree.Insert(value) {
-			t.Fatal("distinct insert failed")
+		node, added := tree.Insert(value)
+		if !added || node.Value == nil || *node.Value != value {
+			t.Fatal("distinct insert must return a node pointing to its stored value")
 		}
+		nodes = append(nodes, node)
 	}
-	if tree.Insert(4) {
+	if _, added := tree.Insert(4); added {
 		t.Fatal("duplicate insert must fail")
 	}
-	if got, ok := tree.Remove(4); !ok || got != 4 || tree.Contains(4) {
+	if got, ok, err := tree.NodeByKey(nodes[0].Key); err != nil || !ok || got != nodes[0] {
+		t.Fatal("NodeByKey must retain stable node identity")
+	}
+	var neighbors []*graphcontract.Node[int]
+	if complete, err := tree.Neighbors(nodes[0].Key, func(node *graphcontract.Node[int], weight int64) bool {
+		neighbors = append(neighbors, node)
+		return true
+	}); err != nil || !complete || len(neighbors) != 2 || neighbors[0] != nodes[1] || neighbors[1] != nodes[2] {
+		t.Fatal("root graph view must visit left and right child nodes")
+	}
+
+	if got, ok := tree.Remove(4); !ok || got.Value == nil || *got.Value != 4 || tree.Contains(4) {
 		t.Fatal("root with two children must be removable")
 	}
 	var got []int
-	tree.InOrder(func(value int) bool { got = append(got, value); return true })
+	tree.InOrder(func(node *graphcontract.Node[int]) bool { got = append(got, *node.Value); return true })
 	for index, want := range []int{1, 2, 3, 5, 6, 7} {
 		if got[index] != want {
 			t.Fatalf("in-order = %v", got)

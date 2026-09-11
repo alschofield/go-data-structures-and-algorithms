@@ -2,6 +2,8 @@
 
 ## How It Works
 Previous and next node links plus held head and tail make both-end operations constant time and indexed walks start near the target.
+The list uses the shared `graph.Node[T]` record and its `Next` and `Prev` links;
+unrelated node fields remain unused.
 
 ## Required API
 Generic `type DoublyLinkedList[T any]` with `NewDoublyLinkedList[T]()`,

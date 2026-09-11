@@ -2,6 +2,8 @@
 
 ## How It Works
 Nodes link forward from a head, making front operations constant time while tail and indexed operations walk the chain.
+The list uses the shared `graph.Node[T]` record and its `Next` link; graph-only
+links remain unused.
 
 ## Required API
 Generic `type SinglyLinkedList[T any]` with `NewSinglyLinkedList[T]()`,

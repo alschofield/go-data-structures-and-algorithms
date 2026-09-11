@@ -13,7 +13,9 @@ Parent-pointer trees represent sets; path compression and union by rank keep the
 Elements are `[0,n)` and start singleton; an out-of-range element returns
 `ErrInvalidIndex`. Find compresses paths; Union returns `false, nil` for an
 existing connection and does not alter rank/count. Only representative equality
-is observable. Do not use a library disjoint-set type.
+is observable. Each element uses a shared `graph.Node[struct{}]`: `Key` is its
+element ID and `Parent` is the disjoint-set parent link. Do not use a library
+disjoint-set type.
 
 ## Complexity Targets
 Find/Union/Connected amortized O(alpha(n)); construction O(n); O(n) space.

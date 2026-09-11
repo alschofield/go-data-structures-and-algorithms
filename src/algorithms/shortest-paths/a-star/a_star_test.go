@@ -2,52 +2,72 @@
 
 package a_star
 
-import "testing"
+import (
+	"testing"
+
+	graphcontract "github.com/alschofield/go-data-structures-and-algorithms/src/data-structures/graphs/graph"
+)
 
 func TestAStar(t *testing.T) {
-	graph := fixture{{{1, 4}, {2, 1}}, {{3, 1}}, {{1, 2}, {3, 5}}, nil}
+	values := []string{"a", "b", "c", "d", "e"}
+	nodes := make([]*graphcontract.Node[string], len(values))
+	for index := range values {
+		nodes[index] = &graphcontract.Node[string]{Key: (index + 1) * 10, Value: &values[index]}
+	}
+	graph := fixture{nodes: nodes, edges: map[int][]edge{nodes[0].Key: {{to: nodes[1], weight: 4}, {to: nodes[2], weight: 1}}, nodes[1].Key: {{to: nodes[3], weight: 1}}, nodes[2].Key: {{to: nodes[1], weight: 2}, {to: nodes[3], weight: 5}}}}
+	var _ graphcontract.Graph[string] = graph
 	for _, test := range []struct {
 		name      string
 		heuristic Heuristic
+		goal_key  int
 		want      []int
-		ok        bool
-	}{{"zero", func(int) int64 { return 0 }, []int{0, 2, 1, 3}, true}, {"unreachable", func(int) int64 { return 0 }, nil, false}} {
-		goal := 3
-		if test.name == "unreachable" {
-			goal = 4
-		}
-		got, ok := AStar(graph, 0, goal, test.heuristic)
-		if ok != test.ok || !same(got, test.want) {
-			t.Fatalf("%s: got (%v, %t), want (%v, %t)", test.name, got, ok, test.want, test.ok)
+	}{
+		{"zero", func(int) int64 { return 0 }, nodes[3].Key, []int{10, 30, 20, 40}},
+		{"unreachable", func(int) int64 { return 0 }, nodes[4].Key, nil},
+	} {
+		got, err := AStar(graph, nodes[0].Key, test.goal_key, test.heuristic)
+		if err != nil || !same_keys(got, test.want) {
+			t.Fatalf("%s: got (%v, %v), want keys (%v, nil)", test.name, got, err, test.want)
 		}
 	}
 }
 
 type edge struct {
-	to     int
+	to     *graphcontract.Node[string]
 	weight int64
 }
-type fixture [][]edge
+type fixture struct {
+	nodes []*graphcontract.Node[string]
+	edges map[int][]edge
+}
 
-func (f fixture) Directed() bool   { return true }
-func (f fixture) VertexCount() int { return len(f) }
-func (f fixture) Neighbors(vertex int, visit func(int, int64) bool) bool {
-	if vertex < 0 || vertex >= len(f) {
-		return false
-	}
-	for _, edge := range f[vertex] {
-		if !visit(edge.to, edge.weight) {
-			break
+func (f fixture) Directed() bool { return true }
+func (f fixture) NodeCount() int { return len(f.nodes) }
+func (f fixture) NodeByKey(key int) (*graphcontract.Node[string], bool, error) {
+	for _, node := range f.nodes {
+		if node.Key == key {
+			return node, true, nil
 		}
 	}
-	return true
+	return nil, false, graphcontract.ErrInvalidKey
 }
-func same(got, want []int) bool {
+func (f fixture) Neighbors(key int, visit func(*graphcontract.Node[string], int64) bool) (bool, error) {
+	if _, ok, err := f.NodeByKey(key); err != nil || !ok {
+		return false, graphcontract.ErrInvalidKey
+	}
+	for _, edge := range f.edges[key] {
+		if !visit(edge.to, edge.weight) {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+func same_keys(got []*graphcontract.Node[string], want []int) bool {
 	if len(got) != len(want) {
 		return false
 	}
-	for i := range got {
-		if got[i] != want[i] {
+	for index := range got {
+		if got[index].Key != want[index] {
 			return false
 		}
 	}

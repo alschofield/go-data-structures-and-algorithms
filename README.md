@@ -48,9 +48,9 @@ src/algorithms/minimum-spanning-trees/kruskal
 ```
 
 `graph` defines the representation-neutral graph contract. Adjacency list and
-matrix retain ownership of values and storage, then expose their dense indexed
-view through `AsGraph()`. Traversal, shortest-path, and spanning-tree
-algorithms operate only on that `Graph` interface.
+matrix retain ownership of values and storage while directly implementing its
+stable-key node view. Traversal and shortest-path algorithms operate on `Graph`;
+Kruskal operates on `UndirectedEdgeGraph` so it receives each logical edge once.
 
 ## Error Handling
 
@@ -62,10 +62,15 @@ unfinished production declaration during default validation.
 
 ## Status
 
-All 27 leaves include user-owned package-only production source scaffolds under
-`src/`. These files intentionally contain only their package declaration;
-implementations remain the learner's responsibility. A leaf becomes available
-to contract tests only after its documented API has been implemented.
+Contract-passing leaves: stack, queue, singly linked list, doubly linked list,
+hash table, graph interface, linear search, binary search, bubble sort,
+selection sort, insertion sort, merge sort, quick sort, heap sort, counting
+sort, and radix sort.
+
+The remaining learner-owned leaves are binary search tree, prefix trie, binary
+heap, adjacency list, adjacency matrix, union-find, BFS, DFS, Dijkstra, A*, and
+Kruskal. A leaf becomes available to contract tests only after its documented
+API has been implemented.
 
 ## TDD Workflow
 

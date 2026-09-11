@@ -4,6 +4,8 @@ package hash_table
 // errors supplies sentinel errors for invalid constructor arguments.
 import (
 	"errors"
+
+	graph "github.com/alschofield/go-data-structures-and-algorithms/src/data-structures/graphs/graph"
 )
 
 // Constructor errors describe invalid configuration before a table exists.
@@ -16,14 +18,12 @@ var (
 	ErrNilEqual = errors.New("function needs a valid equal function.")
 )
 
-// Node stores one key/value pair and the next collision in its bucket chain.
-type Node[K any, V any] struct {
+// entry stores one hash key/value pair inside a shared chain node.
+type entry[K any, V any] struct {
 	// key stays unchanged when an equal replacement updates value.
 	key K
 	// value is returned by Get and replaced by Set for an equal key.
 	value V
-	// next links this entry to the next entry with the same bucket index.
-	next *Node[K, V]
 }
 
 // HashTable owns bucket storage plus the functions that interpret its keys.
@@ -37,7 +37,7 @@ type HashTable[K any, V any] struct {
 	// equal decides whether a searched key matches a stored key.
 	equal func(K, K) bool
 	// items holds one linked-list head per bucket.
-	items []*Node[K, V]
+	items []*graph.Node[entry[K, V]]
 }
 
 // NewHashTable validates its configuration and creates an empty bucket array.
@@ -59,7 +59,7 @@ func NewHashTable[K any, V any](initial_capacity int, hash func(K) uint, equal f
 		capacity: uint(initial_capacity),
 		hash:     hash,
 		equal:    equal,
-		items:    make([]*Node[K, V], initial_capacity),
+		items:    make([]*graph.Node[entry[K, V]], initial_capacity),
 	}, nil
 }
 
@@ -69,21 +69,18 @@ func (ht *HashTable[K, V]) Set(key K, value V) (V, bool) {
 	var bucket uint = ht.hash(key) % ht.capacity
 
 	// Scan the chain so equal keys replace rather than duplicate an entry.
-	for list := ht.items[bucket]; list != nil; list = list.next {
-		if ht.equal(key, list.key) {
+	for list := ht.items[bucket]; list != nil; list = list.Next {
+		if ht.equal(key, list.Value.key) {
 			// Preserve the original stored key and return its previous value.
-			old_value := list.value
-			list.value = value
+			old_value := list.Value.value
+			list.Value.value = value
 			return old_value, true
 		}
 	}
 
 	// Prepend a new collision node so insertion does not traverse the chain again.
-	ht.items[bucket] = &Node[K, V]{
-		key:   key,
-		value: value,
-		next:  ht.items[bucket],
-	}
+	new_entry := entry[K, V]{key: key, value: value}
+	ht.items[bucket] = &graph.Node[entry[K, V]]{Value: &new_entry, Next: ht.items[bucket]}
 
 	// Only a new key increases the number of entries.
 	ht.size++
@@ -100,8 +97,8 @@ func (ht *HashTable[K, V]) SetResizing(key K, value V) (V, bool) {
 		// Doubling keeps growth geometric and preserves a positive capacity.
 		var new_capacity uint = ht.capacity * 2
 		// New bucket heads receive every existing node under the new modulus.
-		var items []*Node[K, V] = make([]*Node[K, V], new_capacity)
-		var candidate *Node[K, V]
+		var items []*graph.Node[entry[K, V]] = make([]*graph.Node[entry[K, V]], new_capacity)
+		var candidate *graph.Node[entry[K, V]]
 		for i := 0; i < int(ht.capacity); i++ {
 			candidate = ht.items[i]
 
@@ -113,11 +110,11 @@ func (ht *HashTable[K, V]) SetResizing(key K, value V) (V, bool) {
 			// Relink each old chain node into its new bucket.
 			for candidate != nil {
 				// Save the old successor before overwriting candidate.next.
-				next := candidate.next
+				next := candidate.Next
 				// The new capacity can change this node's bucket.
-				new_bucket := ht.hash(candidate.key) % uint(new_capacity)
+				new_bucket := ht.hash(candidate.Value.key) % uint(new_capacity)
 				// Prepend the node to its new collision chain.
-				candidate.next = items[new_bucket]
+				candidate.Next = items[new_bucket]
 				items[new_bucket] = candidate
 				// Continue through the old chain using the saved link.
 				candidate = next
@@ -137,14 +134,14 @@ func (ht *HashTable[K, V]) SetResizing(key K, value V) (V, bool) {
 func (ht *HashTable[K, V]) Get(key K) (V, bool) {
 	// Search only the chain selected by this key's hash.
 	var bucket uint = ht.hash(key) % ht.capacity
-	var node *Node[K, V] = ht.items[bucket]
+	var node *graph.Node[entry[K, V]] = ht.items[bucket]
 	for node != nil {
-		if ht.equal(key, node.key) {
-			return node.value, true
+		if ht.equal(key, node.Value.key) {
+			return node.Value.value, true
 		}
 
 		// Advance through collisions until a match or chain end.
-		node = node.next
+		node = node.Next
 	}
 
 	// Absence is a normal lookup result, not an error.
@@ -156,28 +153,28 @@ func (ht *HashTable[K, V]) Get(key K) (V, bool) {
 func (ht *HashTable[K, V]) Remove(key K) (V, bool) {
 	// Track both the current node and its predecessor in the target chain.
 	var bucket uint = ht.hash(key) % ht.capacity
-	var node *Node[K, V] = ht.items[bucket]
-	var prev *Node[K, V]
+	var node *graph.Node[entry[K, V]] = ht.items[bucket]
+	var prev *graph.Node[entry[K, V]]
 	for node != nil {
-		if ht.equal(key, node.key) {
+		if ht.equal(key, node.Value.key) {
 			if prev == nil {
 				// Removing the head changes the bucket's chain head.
-				ht.items[bucket] = node.next
+				ht.items[bucket] = node.Next
 			} else {
 				// Removing elsewhere skips the node from its predecessor.
-				prev.next = node.next
+				prev.Next = node.Next
 			}
 
 			// A successful removal decreases entry count and detaches the node.
 			ht.size--
-			node.next = nil
+			node.Next = nil
 
-			return node.value, true
+			return node.Value.value, true
 		}
 
 		// Advance both pointers while preserving their predecessor relationship.
 		prev = node
-		node = node.next
+		node = node.Next
 	}
 
 	// An absent key leaves every bucket and counter unchanged.

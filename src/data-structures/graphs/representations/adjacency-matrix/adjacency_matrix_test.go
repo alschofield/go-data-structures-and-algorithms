@@ -5,32 +5,48 @@ package adjacency_matrix
 import (
 	"errors"
 	"testing"
+
+	graphcontract "github.com/alschofield/go-data-structures-and-algorithms/src/data-structures/graphs/graph"
 )
 
 func TestAdjacencyMatrix(t *testing.T) {
-	graph := NewAdjacencyMatrix(false)
-	for _, value := range []string{"a", "b", "c"} {
-		graph.AddVertex(value)
+	values := []string{"a", "b", "c"}
+	matrix := NewAdjacencyMatrix[string](false)
+	var _ graphcontract.Graph[string] = matrix
+	var _ graphcontract.UndirectedEdgeGraph[string] = matrix
+
+	nodes := make([]*graphcontract.Node[string], 0, len(values))
+	for index := range values {
+		node, err := matrix.AddVertex(&values[index])
+		if err != nil {
+			t.Fatalf("AddVertex() error = %v", err)
+		}
+		nodes = append(nodes, node)
 	}
-	added, err := graph.AddEdge(0, 1, 4)
-	hasReverse, err := graph.HasEdge(1, 0)
-	duplicate, err := graph.AddEdge(0, 1, 4)
-	if err != nil || !added || !hasReverse || duplicate {
+	added, err := matrix.AddEdge(nodes[0].Key, nodes[1].Key, 4)
+	has_reverse, err := matrix.HasEdge(nodes[1].Key, nodes[0].Key)
+	duplicate, err := matrix.AddEdge(nodes[0].Key, nodes[1].Key, 4)
+	if err != nil || !added || !has_reverse || duplicate {
 		t.Fatal("undirected edges must mirror once and reject duplicates")
 	}
-	removed, err := graph.RemoveEdge(0, 1)
-	hasForward, err := graph.HasEdge(0, 1)
-	hasReverse, err = graph.HasEdge(1, 0)
-	if err != nil || !removed || hasForward || hasReverse {
+
+	var edges []graphcontract.Edge[string]
+	if complete := matrix.Edges(func(edge graphcontract.Edge[string]) bool { edges = append(edges, edge); return true }); !complete || len(edges) != 1 || edges[0] != (graphcontract.Edge[string]{From: nodes[0], To: nodes[1], Weight: 4}) {
+		t.Fatal("undirected Edges must report one logical edge")
+	}
+	removed, err := matrix.RemoveEdge(nodes[0].Key, nodes[1].Key)
+	has_forward, err := matrix.HasEdge(nodes[0].Key, nodes[1].Key)
+	has_reverse, err = matrix.HasEdge(nodes[1].Key, nodes[0].Key)
+	if err != nil || !removed || has_forward || has_reverse {
 		t.Fatal("removal must clear both matrix cells")
 	}
-	if removed, err := graph.RemoveEdge(0, 1); err != nil || removed {
+	if removed, err := matrix.RemoveEdge(nodes[0].Key, nodes[1].Key); err != nil || removed {
 		t.Fatal("absent mutation must be a normal no-op")
 	}
-	if _, err := graph.AddEdge(3, 0, 1); !errors.Is(err, ErrInvalidEdge) {
+	if _, err := matrix.AddEdge(999, nodes[0].Key, 1); !errors.Is(err, graphcontract.ErrInvalidKey) {
 		t.Fatal("absent or invalid mutations must fail cleanly")
 	}
-	if got, ok, err := graph.VertexAt(2); err != nil || !ok || got != "c" {
-		t.Fatal("VertexAt must retain insertion order")
+	if got, ok, err := matrix.NodeByKey(nodes[2].Key); err != nil || !ok || got != nodes[2] || got.Value != &values[2] {
+		t.Fatal("NodeByKey must retain the caller value pointer")
 	}
 }
