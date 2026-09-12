@@ -61,16 +61,16 @@ func undirectedFixture(values []string, input []edge) graphFixture {
 }
 func (g graphFixture) Directed() bool { return g.directed }
 func (g graphFixture) NodeCount() int { return len(g.nodes) }
-func (g graphFixture) NodeByKey(key int) (*graphcontract.Node[string], bool, error) {
+func (g graphFixture) NodeByKey(key int) (*graphcontract.Node[string], bool) {
 	for _, node := range g.nodes {
 		if node.Key == key {
-			return node, true, nil
+			return node, true
 		}
 	}
-	return nil, false, graphcontract.ErrInvalidKey
+	return nil, false
 }
 func (g graphFixture) Neighbors(key int, visit func(*graphcontract.Node[string], int64) bool) (bool, error) {
-	if _, ok, err := g.NodeByKey(key); err != nil || !ok {
+	if _, ok := g.NodeByKey(key); !ok {
 		return false, graphcontract.ErrInvalidKey
 	}
 	for _, edge := range g.logical {
@@ -83,11 +83,11 @@ func (g graphFixture) Neighbors(key int, visit func(*graphcontract.Node[string],
 	}
 	return true, nil
 }
-func (g graphFixture) Edges(visit func(graphcontract.Edge[string]) bool) bool {
+func (g graphFixture) Edges(visit func(graphcontract.Edge[string]) bool) (bool, error) {
 	for _, edge := range g.logical {
 		if !visit(edge) {
-			return false
+			return false, nil
 		}
 	}
-	return true
+	return true, nil
 }

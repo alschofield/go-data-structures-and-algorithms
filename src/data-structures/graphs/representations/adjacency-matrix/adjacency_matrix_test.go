@@ -17,10 +17,7 @@ func TestAdjacencyMatrix(t *testing.T) {
 
 	nodes := make([]*graphcontract.Node[string], 0, len(values))
 	for index := range values {
-		node, err := matrix.AddVertex(&values[index])
-		if err != nil {
-			t.Fatalf("AddVertex() error = %v", err)
-		}
+		node := matrix.AddVertex(&values[index])
 		nodes = append(nodes, node)
 	}
 	added, err := matrix.AddEdge(nodes[0].Key, nodes[1].Key, 4)
@@ -31,7 +28,7 @@ func TestAdjacencyMatrix(t *testing.T) {
 	}
 
 	var edges []graphcontract.Edge[string]
-	if complete := matrix.Edges(func(edge graphcontract.Edge[string]) bool { edges = append(edges, edge); return true }); !complete || len(edges) != 1 || edges[0] != (graphcontract.Edge[string]{From: nodes[0], To: nodes[1], Weight: 4}) {
+	if complete, err := matrix.Edges(func(edge graphcontract.Edge[string]) bool { edges = append(edges, edge); return true }); err != nil || !complete || len(edges) != 1 || edges[0] != (graphcontract.Edge[string]{From: nodes[0], To: nodes[1], Weight: 4}) {
 		t.Fatal("undirected Edges must report one logical edge")
 	}
 	removed, err := matrix.RemoveEdge(nodes[0].Key, nodes[1].Key)
@@ -46,7 +43,7 @@ func TestAdjacencyMatrix(t *testing.T) {
 	if _, err := matrix.AddEdge(999, nodes[0].Key, 1); !errors.Is(err, graphcontract.ErrInvalidKey) {
 		t.Fatal("absent or invalid mutations must fail cleanly")
 	}
-	if got, ok, err := matrix.NodeByKey(nodes[2].Key); err != nil || !ok || got != nodes[2] || got.Value != &values[2] {
+	if got, ok := matrix.NodeByKey(nodes[2].Key); !ok || got != nodes[2] || got.Value != &values[2] {
 		t.Fatal("NodeByKey must retain the caller value pointer")
 	}
 }

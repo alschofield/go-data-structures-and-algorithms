@@ -13,7 +13,7 @@ Generic `type BinarySearchTree[T any]` with
 `InOrder(func(*graph.Node[T]) bool) bool`, `Len() int`, and `IsEmpty() bool`.
 
 It directly implements `graph.Graph[T]`: `Directed() bool`, `NodeCount() int`,
-`NodeByKey(key int) (*graph.Node[T], bool, error)`, and `Neighbors(key int,
+`NodeByKey(key int) (*graph.Node[T], bool)`, and `Neighbors(key int,
 func(*graph.Node[T], int64) bool) (bool, error)`.
 
 ## Contract

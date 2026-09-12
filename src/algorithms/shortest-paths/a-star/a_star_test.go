@@ -43,16 +43,16 @@ type fixture struct {
 
 func (f fixture) Directed() bool { return true }
 func (f fixture) NodeCount() int { return len(f.nodes) }
-func (f fixture) NodeByKey(key int) (*graphcontract.Node[string], bool, error) {
+func (f fixture) NodeByKey(key int) (*graphcontract.Node[string], bool) {
 	for _, node := range f.nodes {
 		if node.Key == key {
-			return node, true, nil
+			return node, true
 		}
 	}
-	return nil, false, graphcontract.ErrInvalidKey
+	return nil, false
 }
 func (f fixture) Neighbors(key int, visit func(*graphcontract.Node[string], int64) bool) (bool, error) {
-	if _, ok, err := f.NodeByKey(key); err != nil || !ok {
+	if _, ok := f.NodeByKey(key); !ok {
 		return false, graphcontract.ErrInvalidKey
 	}
 	for _, edge := range f.edges[key] {

@@ -2,10 +2,7 @@
 
 package graph
 
-import (
-	"errors"
-	"testing"
-)
+import "testing"
 
 func TestGraphContract(t *testing.T) {
 	values := []string{"a", "b", "c"}
@@ -16,11 +13,11 @@ func TestGraphContract(t *testing.T) {
 	if !graph.Directed() || graph.NodeCount() != 3 {
 		t.Fatal("Graph must expose direction and stable-key node count")
 	}
-	if node, ok, err := graph.NodeByKey(20); err != nil || !ok || node != nodes[1] || node.Value != &values[1] {
+	if node, ok := graph.NodeByKey(20); !ok || node != nodes[1] || node.Value != &values[1] {
 		t.Fatal("NodeByKey must preserve key and underlying value pointer")
 	}
-	if _, _, err := graph.NodeByKey(99); !errors.Is(err, ErrInvalidKey) {
-		t.Fatalf("invalid key error = %v, want ErrInvalidKey", err)
+	if _, ok := graph.NodeByKey(99); ok {
+		t.Fatal("missing NodeByKey lookup must return ok=false")
 	}
 
 	var got []Edge[string]
@@ -47,10 +44,10 @@ func TestUndirectedEdgeGraphContract(t *testing.T) {
 	var _ UndirectedEdgeGraph[string] = graph
 
 	var got []Edge[string]
-	if complete := graph.Edges(func(edge Edge[string]) bool {
+	if complete, err := graph.Edges(func(edge Edge[string]) bool {
 		got = append(got, edge)
 		return true
-	}); !complete || len(got) != 1 || got[0] != (Edge[string]{From: nodes[0], To: nodes[1], Weight: 7}) {
+	}); err != nil || !complete || len(got) != 1 || got[0] != (Edge[string]{From: nodes[0], To: nodes[1], Weight: 7}) {
 		t.Fatal("Edges must report each logical undirected edge once in deterministic order")
 	}
 }
@@ -73,16 +70,16 @@ type undirectedFixture[T any] struct {
 
 func (g graphFixture[T]) Directed() bool { return g.directed }
 func (g graphFixture[T]) NodeCount() int { return len(g.nodes) }
-func (g graphFixture[T]) NodeByKey(key int) (*Node[T], bool, error) {
+func (g graphFixture[T]) NodeByKey(key int) (*Node[T], bool) {
 	for _, node := range g.nodes {
 		if node.Key == key {
-			return node, true, nil
+			return node, true
 		}
 	}
-	return nil, false, ErrInvalidKey
+	return nil, false
 }
 func (g graphFixture[T]) Neighbors(key int, visit func(*Node[T], int64) bool) (bool, error) {
-	if _, ok, err := g.NodeByKey(key); err != nil || !ok {
+	if _, ok := g.NodeByKey(key); !ok {
 		return false, ErrInvalidKey
 	}
 	for _, edge := range g.edges[key] {
@@ -95,16 +92,16 @@ func (g graphFixture[T]) Neighbors(key int, visit func(*Node[T], int64) bool) (b
 
 func (g undirectedFixture[T]) Directed() bool { return false }
 func (g undirectedFixture[T]) NodeCount() int { return len(g.nodes) }
-func (g undirectedFixture[T]) NodeByKey(key int) (*Node[T], bool, error) {
+func (g undirectedFixture[T]) NodeByKey(key int) (*Node[T], bool) {
 	for _, node := range g.nodes {
 		if node.Key == key {
-			return node, true, nil
+			return node, true
 		}
 	}
-	return nil, false, ErrInvalidKey
+	return nil, false
 }
 func (g undirectedFixture[T]) Neighbors(key int, visit func(*Node[T], int64) bool) (bool, error) {
-	if _, ok, err := g.NodeByKey(key); err != nil || !ok {
+	if _, ok := g.NodeByKey(key); !ok {
 		return false, ErrInvalidKey
 	}
 	for _, edge := range g.edges {
@@ -117,11 +114,11 @@ func (g undirectedFixture[T]) Neighbors(key int, visit func(*Node[T], int64) boo
 	}
 	return true, nil
 }
-func (g undirectedFixture[T]) Edges(visit func(Edge[T]) bool) bool {
+func (g undirectedFixture[T]) Edges(visit func(Edge[T]) bool) (bool, error) {
 	for _, edge := range g.edges {
 		if !visit(edge) {
-			return false
+			return false, nil
 		}
 	}
-	return true
+	return true, nil
 }

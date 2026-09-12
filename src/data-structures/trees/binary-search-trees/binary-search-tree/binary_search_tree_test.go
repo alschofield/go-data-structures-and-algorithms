@@ -27,7 +27,7 @@ func TestBinarySearchTree(t *testing.T) {
 	if node, added := tree.Insert(4); added || node != nodes[0] || node.Occurrences != 2 {
 		t.Fatal("duplicate insert must retain the node and increment its occurrence metric")
 	}
-	if got, ok, err := tree.NodeByKey(nodes[0].Key); err != nil || !ok || got != nodes[0] {
+	if got, ok := tree.NodeByKey(nodes[0].Key); !ok || got != nodes[0] {
 		t.Fatal("NodeByKey must retain stable node identity")
 	}
 	var neighbors []*graphcontract.Node[int]

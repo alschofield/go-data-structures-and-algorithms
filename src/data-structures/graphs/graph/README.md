@@ -5,11 +5,11 @@
 `type Node[T any]` with `Key`, `Value`, `Next`, `Prev`, `Left`, `Right`,
 `Parent`, `Children`, and `Edges`; `type Edge[T any] struct { From, To
 *Node[T]; Weight int64 }`; and `type Graph[T any] interface` with `Directed()
-bool`, `NodeCount() int`, `NodeByKey(key int) (*Node[T], bool, error)`, and
+bool`, `NodeCount() int`, `NodeByKey(key int) (*Node[T], bool)`, and
 `Neighbors(key int, visit func(*Node[T], int64) bool) (bool, error)`.
 
 `type UndirectedEdgeGraph[T any] interface` extends `Graph[T]` with
-`Edges(visit func(Edge[T]) bool) bool`.
+`Edges(visit func(Edge[T]) bool) (bool, error)`.
 
 ## Contract
 
@@ -21,15 +21,17 @@ bool`, `NodeCount() int`, `NodeByKey(key int) (*Node[T], bool, error)`, and
   substitute a copied or unrelated payload.
 - `Node.Occurrences` is an optional structure-owned observational metric. A
   structure that uses it must document whether it changes mutation behavior.
-- `NodeByKey` and `Neighbors` return `ErrInvalidKey` for an absent key.
-  `Neighbors` visits outgoing weighted node edges in deterministic order and
-  returns false only when its visitor requests an early stop.
+- `NodeByKey` returns `ok=false` for an absent key. `Neighbors` returns
+  `ErrInvalidKey` for an invalid key, visits outgoing weighted node edges in
+  deterministic order, and returns false only when its visitor requests an
+  early stop.
 - Adjacency-list and adjacency-matrix structs implement `Graph[T]` directly.
   BSTs may implement it as a directed tree view. The interface never owns or
   mutates representation storage.
 - Undirected representations implement `UndirectedEdgeGraph[T]` by reporting
-  each logical edge once in deterministic order. Kruskal rejects directed
-  graphs before reading edges.
+  each logical edge once in deterministic order. `Edges` returns
+  `ErrDirectedGraph` for a directed representation; Kruskal also rejects a
+  directed graph before reading edges.
 - Edge weights use `int64`. Traversal ignores them; Dijkstra and A-star reject
   negative weights; Kruskal accepts signed weights for undirected graphs.
 

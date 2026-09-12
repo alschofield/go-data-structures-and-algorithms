@@ -220,7 +220,7 @@ func (b *BinarySearchTree[T]) NodeCount() int {
 }
 
 // NodeByKey finds a stable graph key through the current tree structure.
-func (b *BinarySearchTree[T]) NodeByKey(key int) (*graph.Node[T], bool, error) {
+func (b *BinarySearchTree[T]) NodeByKey(key int) (*graph.Node[T], bool) {
 	var node *graph.Node[T] = nil
 	b.InOrder(func(visitor *graph.Node[T]) bool {
 		if key == visitor.Key {
@@ -232,22 +232,17 @@ func (b *BinarySearchTree[T]) NodeByKey(key int) (*graph.Node[T], bool, error) {
 	})
 
 	if node == nil {
-		return nil, false, graph.ErrInvalidKey
+		return nil, false
 	} else {
-		return node, true, nil
+		return node, true
 	}
 }
 
 // Neighbors exposes left and right child links as directed unit-weight edges.
 func (b *BinarySearchTree[T]) Neighbors(key int, visit func(*graph.Node[T], int64) bool) (bool, error) {
-	node, status, err := b.NodeByKey(key)
-
-	if err != nil {
-		return false, err
-	}
-
+	node, status := b.NodeByKey(key)
 	if !status {
-		return false, nil
+		return false, graph.ErrInvalidKey
 	}
 
 	if node.Left != nil {

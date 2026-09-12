@@ -4,6 +4,7 @@ import "errors"
 
 // ErrInvalidKey reports a key that does not identify a node in the graph.
 var ErrInvalidKey error = errors.New("function requires a valid node key.")
+var ErrDirectedGraph error = errors.New("function requires an undirected graph.")
 
 // Node is the shared storage record for node-backed data structures.
 // Structures use only the links they need and leave the remaining fields nil.
@@ -39,8 +40,8 @@ type Graph[T any] interface {
 	Directed() bool
 	// NodeCount returns the number of nodes currently in the graph.
 	NodeCount() int
-	// NodeByKey returns the node with key or ErrInvalidKey when it is absent.
-	NodeByKey(key int) (*Node[T], bool, error)
+	// NodeByKey returns the node for key and false when it is absent.
+	NodeByKey(key int) (*Node[T], bool)
 	// Neighbors visits outgoing edges in deterministic representation order.
 	// It returns false when visit requests an early stop.
 	Neighbors(key int, visit func(neighbor *Node[T], weight int64) bool) (bool, error)
@@ -51,5 +52,5 @@ type Graph[T any] interface {
 // mirrored representation storage.
 type UndirectedEdgeGraph[T any] interface {
 	Graph[T]
-	Edges(visit func(Edge[T]) bool) bool
+	Edges(visit func(Edge[T]) bool) (bool, error)
 }
