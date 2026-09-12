@@ -148,11 +148,32 @@ func (b BinarySearchTree[T]) Remove(value T) (*graph.Node[T], bool) {
 	}
 }
 
-func (b *BinarySearchTree[T]) InOrder(visit func(*graph.Node[T]) bool) bool {
-	// traverse from the deepest left most value to the deepest right most value recursively
-	// if visit returns false then return true
+func recurse[T any](node *graph.Node[T], visit func(*graph.Node[T]) bool) bool {
+	if node.Left != nil {
+		if !recurse(node.Left, visit) {
+			return false
+		}
+	}
+
+	if !visit(node) {
+		return false
+	}
+
+	if node.Right != nil {
+		if !recurse(node.Right, visit) {
+			return false
+		}
+	}
 
 	return true
+}
+
+func (b *BinarySearchTree[T]) InOrder(visit func(*graph.Node[T]) bool) bool {
+	if b.size == 0 {
+		return true
+	}
+
+	return recurse(b.root, visit)
 }
 
 func (b *BinarySearchTree[T]) Len() int {
@@ -197,16 +218,27 @@ func (b *BinarySearchTree[T]) Neighbors(key int, visit func(*graph.Node[T], int6
 		return false, graph.ErrInvalidKey
 	}
 
-	// how is this supposed to work?
-	// traverse to the node at key?
-	// then visit each neighbor? left and right? and should it visit parent?
-	// this brings up a ethical conversation around if a BSTs nodes
-	// 		should keep track of who their parent is.
-	// some might say, i think myself included, that it should not just for integrity of the game
-	// but in practice if it saves time at no tradeoff
-	// 		we'd be a fool to not support it
-	// 		although even if you keep track of the parent
-	// 		youd still have to traverse InOrder
+	node, status, err := b.NodeByKey(key)
 
-	return false, nil
+	if !status {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	if node.Left != nil {
+		if !visit(node.Left, 1) {
+			return true, nil
+		}
+	}
+
+	if node.Right != nil {
+		if !visit(node.Right, 1) {
+			return true, nil
+		}
+	}
+
+	return true, nil
 }
