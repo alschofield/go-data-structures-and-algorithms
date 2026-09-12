@@ -19,14 +19,28 @@ func(*graph.Node[T], int64) bool) (bool, error)`.
 ## Contract
 
 `NewBinarySearchTree` returns `ErrNilComparator` for a nil comparator.
-Comparator equality rejects duplicates and retains the first node; missing `Find`
-and `Remove` results use `ok=false`, not an error. Graph keys are stable for a
-node's lifetime, may have gaps after removal, and `Node.Value` points to the
-value stored in that node. The graph view is directed and reports left then
-right child edges at weight `1`. Remove supports leaf, one-child, two-child,
-and root nodes. InOrder stops on false. Implement nodes, not an ordered library
-container.
+Comparator equality retains the first structural node, returns it with
+`added=false`, and increments its `Occurrences` metric. `Occurrences` is
+observational only: `Remove` always structurally removes the node regardless of
+its count. Missing `Find` and `Remove` results use `ok=false`, not an error.
+Graph keys are stable for a node's lifetime, may have gaps after removal, and
+`Node.Value` points to the value stored in that node. The graph view is directed
+and reports left then right child edges at weight `1`. Remove supports leaf,
+one-child, two-child, and root nodes. InOrder stops on false. Implement nodes,
+not an ordered library container.
 
 ## Complexity Targets
 
 Balanced core operations O(log n), unbalanced O(n), traversal O(n); O(n) nodes plus O(height) work space. Graph key lookup may use the tree's own node structure; do not bolt on a separate external lookup structure.
+
+## Verification
+
+```sh
+make contract NAME=data-structures/trees/binary-search-trees/binary-search-tree
+go test -tags=contract -run '^$' -bench=BinarySearchTree -benchmem ./src/data-structures/trees/binary-search-trees/binary-search-tree
+```
+
+Benchmarks cover random insertion, sorted adversarial insertion, lookup, and
+structural removal at 256 and 1,024 nodes. The removal workload includes fresh
+tree construction to give every iteration the same structural case. Results are
+machine-specific; compare repeated samples with `-count=10` and `benchstat`.

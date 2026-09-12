@@ -19,6 +19,8 @@ bool`, `NodeCount() int`, `NodeByKey(key int) (*Node[T], bool, error)`, and
   Node-backed structures reuse this record and leave links irrelevant to their
   representation nil. Each representation owns its value lifetime and must not
   substitute a copied or unrelated payload.
+- `Node.Occurrences` is an optional structure-owned observational metric. A
+  structure that uses it must document whether it changes mutation behavior.
 - `NodeByKey` and `Neighbors` return `ErrInvalidKey` for an absent key.
   `Neighbors` visits outgoing weighted node edges in deterministic order and
   returns false only when its visitor requests an early stop.

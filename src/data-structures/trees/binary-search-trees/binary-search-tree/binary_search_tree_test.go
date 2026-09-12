@@ -24,8 +24,8 @@ func TestBinarySearchTree(t *testing.T) {
 		}
 		nodes = append(nodes, node)
 	}
-	if _, added := tree.Insert(4); added {
-		t.Fatal("duplicate insert must fail")
+	if node, added := tree.Insert(4); added || node != nodes[0] || node.Occurrences != 2 {
+		t.Fatal("duplicate insert must retain the node and increment its occurrence metric")
 	}
 	if got, ok, err := tree.NodeByKey(nodes[0].Key); err != nil || !ok || got != nodes[0] {
 		t.Fatal("NodeByKey must retain stable node identity")
@@ -39,7 +39,7 @@ func TestBinarySearchTree(t *testing.T) {
 	}
 
 	if got, ok := tree.Remove(4); !ok || got.Value == nil || *got.Value != 4 || tree.Contains(4) {
-		t.Fatal("root with two children must be removable")
+		t.Fatal("Remove must structurally remove a root with two children regardless of Occurrences")
 	}
 	var got []int
 	tree.InOrder(func(node *graphcontract.Node[int]) bool { got = append(got, *node.Value); return true })

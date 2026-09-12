@@ -11,7 +11,7 @@ type Node[T any] struct {
 	Key   int
 	Value *T
 
-	Occurences int
+	Occurrences int
 
 	Next   *Node[T]
 	Prev   *Node[T]

@@ -17,3 +17,15 @@ and `2i+2`, so explicit Left and Right links remain unused. Do not use a library
 
 ## Complexity Targets
 Push/Pop O(log n), Peek/Len/IsEmpty O(1), bottom-up heapify O(n), O(n) contiguous space.
+
+## Verification
+
+```sh
+make contract NAME=data-structures/trees/heaps/binary-heap
+go test -tags=contract -run '^$' -bench=BinaryHeap -benchmem ./src/data-structures/trees/heaps/binary-heap
+```
+
+Benchmarks cover random and ascending full-heap construction, full removal from
+a random heap, and a steady mixed push-pop workload at 256 and 1,024 nodes.
+Full-build and full-removal workloads include their required setup; the mixed
+workload prebuilds one heap before timing.
