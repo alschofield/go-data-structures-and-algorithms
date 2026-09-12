@@ -12,10 +12,12 @@ type PrefixTrie struct {
 }
 
 func NewPrefixTrie() *PrefixTrie {
+	children := make(map[rune]*graph.Node[string])
 	var root_char string = ""
 	root := &graph.Node[string]{
-		Key:   0,
-		Value: &root_char,
+		Key:      0,
+		Value:    &root_char,
+		Children: children,
 	}
 
 	return &PrefixTrie{

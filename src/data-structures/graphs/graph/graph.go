@@ -12,6 +12,7 @@ type Node[T any] struct {
 	Value *T
 
 	Occurrences int
+	IsEndOfWord bool
 
 	Next   *Node[T]
 	Prev   *Node[T]
