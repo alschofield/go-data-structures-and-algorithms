@@ -138,7 +138,7 @@ func (b BinarySearchTree[T]) Remove(value T) (*graph.Node[T], bool) {
 
 		if comparison < 0 {
 			parent.Left = replacement
-		} else if comparison < 0 {
+		} else if comparison > 0 {
 			parent.Right = replacement
 		}
 
