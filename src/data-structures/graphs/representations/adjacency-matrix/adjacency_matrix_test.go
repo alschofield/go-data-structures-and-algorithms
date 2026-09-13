@@ -46,4 +46,20 @@ func TestAdjacencyMatrix(t *testing.T) {
 	if got, ok := matrix.NodeByKey(nodes[2].Key); !ok || got != nodes[2] || got.Value != &values[2] {
 		t.Fatal("NodeByKey must retain the caller value pointer")
 	}
+	if _, ok := matrix.NodeByKey(-1); ok {
+		t.Fatal("invalid NodeByKey lookup must return ok=false")
+	}
+}
+
+func TestAdjacencyMatrixRejectsDirectedEdgesView(t *testing.T) {
+	value_a, value_b := "a", "b"
+	matrix := NewAdjacencyMatrix[string](true)
+	from := matrix.AddVertex(&value_a)
+	to := matrix.AddVertex(&value_b)
+	if added, err := matrix.AddEdge(from.Key, to.Key, 1); err != nil || !added {
+		t.Fatal("directed edge setup failed")
+	}
+	if _, err := matrix.Edges(func(graphcontract.Edge[string]) bool { return true }); !errors.Is(err, graphcontract.ErrDirectedGraph) {
+		t.Fatalf("directed Edges() error = %v, want ErrDirectedGraph", err)
+	}
 }
