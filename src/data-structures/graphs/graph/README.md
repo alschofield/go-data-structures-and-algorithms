@@ -21,6 +21,8 @@ bool`, `NodeCount() int`, `NodeByKey(key int) (*Node[T], bool)`, and
   substitute a copied or unrelated payload.
 - `Node.Occurrences` is an optional structure-owned observational metric. A
   structure that uses it must document whether it changes mutation behavior.
+- `Node.Rank` is an optional Union-Find balancing metric. Only set roots use
+  it; it is distinct from a node's `Parent` pointer and identity `Key`.
 - `NodeByKey` returns `ok=false` for an absent key. `Neighbors` returns
   `ErrInvalidKey` for an invalid key, visits outgoing weighted node edges in
   deterministic order, and returns false only when its visitor requests an

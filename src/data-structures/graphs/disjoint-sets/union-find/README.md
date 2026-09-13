@@ -11,7 +11,7 @@ Parent-pointer trees represent sets; path compression and union by rank keep the
 ## Contract
 `NewUnionFind` returns `ErrInvalidCapacity` for a negative element count.
 Elements are `[0,n)` and start singleton; an out-of-range element returns
-`ErrInvalidIndex`. Find compresses paths; Union returns `false, nil` for an
+`ErrInvalidIndex`. Find uses path halving; Union returns `false, nil` for an
 existing connection and does not alter rank/count. Only representative equality
 is observable. Each element uses a shared `graph.Node[struct{}]`: `Key` is its
 element ID and `Parent` is the disjoint-set parent link. Do not use a library
@@ -19,3 +19,14 @@ disjoint-set type.
 
 ## Complexity Targets
 Find/Union/Connected amortized O(alpha(n)); construction O(n); O(n) space.
+
+## Verification
+
+```sh
+make contract NAME=data-structures/graphs/disjoint-sets/union-find
+go test -tags=contract -run '^$' -bench=UnionFind -benchmem ./src/data-structures/graphs/disjoint-sets/union-find
+```
+
+Benchmarks cover compressed find, representative comparison through Connected,
+and a fresh-set union workload at 256 and 1,024 elements. Setup constructs a
+connected set before timed find and connectivity workloads.
