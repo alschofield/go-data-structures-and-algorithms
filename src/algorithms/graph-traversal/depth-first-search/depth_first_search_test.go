@@ -20,12 +20,24 @@ func TestDepthFirstSearch(t *testing.T) {
 	for _, test := range []struct {
 		source_key int
 		want       []int
+		complete   bool
 		err        error
-	}{{nodes[0].Key, []int{10, 20, 40, 30}, nil}, {nodes[4].Key, []int{50}, nil}, {99, nil, graphcontract.ErrInvalidKey}} {
-		got, err := DepthFirstSearch(graph, test.source_key)
-		if !errors.Is(err, test.err) || !same_keys(got, test.want) {
-			t.Fatalf("source %d: got (%v, %v), want keys (%v, %v)", test.source_key, got, err, test.want, test.err)
+	}{{nodes[0].Key, []int{10, 30, 40, 20}, true, nil}, {nodes[4].Key, []int{50}, true, nil}, {99, nil, false, graphcontract.ErrInvalidKey}} {
+		got, complete, err := DepthFirstSearch(graph, test.source_key, func(*graphcontract.Node[string]) bool { return true })
+		if !errors.Is(err, test.err) || complete != test.complete || !same_keys(got, test.want) {
+			t.Fatalf("source %d: got (%v, %t, %v), want keys (%v, %t, %v)", test.source_key, got, complete, err, test.want, test.complete, test.err)
 		}
+	}
+
+	stopped, complete, err := DepthFirstSearch(graph, nodes[0].Key, func(node *graphcontract.Node[string]) bool { return node.Key != nodes[2].Key })
+	if err != nil || !complete || !same_keys(stopped, []int{10, 30}) {
+		t.Fatalf("early stop = (%v, %t, %v), want ([10 30], true, nil)", stopped, complete, err)
+	}
+	if _, complete, err := DepthFirstSearch[string](nil, nodes[0].Key, func(*graphcontract.Node[string]) bool { return true }); complete || !errors.Is(err, ErrNilGraph) {
+		t.Fatalf("nil graph = (complete=%t, err=%v), want (false, ErrNilGraph)", complete, err)
+	}
+	if _, complete, err := DepthFirstSearch(graph, nodes[0].Key, nil); complete || !errors.Is(err, ErrNilVisit) {
+		t.Fatalf("nil visitor = (complete=%t, err=%v), want (false, ErrNilVisit)", complete, err)
 	}
 }
 
