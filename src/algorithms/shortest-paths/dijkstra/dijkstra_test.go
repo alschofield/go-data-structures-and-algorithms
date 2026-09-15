@@ -27,8 +27,31 @@ func TestDijkstra(t *testing.T) {
 			t.Fatalf("Distance(%d) = (%d, %t), want (%d, true)", key, got, present, want)
 		}
 	}
+	for key, want := range map[int]int{20: 30, 30: 10, 40: 20} {
+		if got, present := result.Parent(key); !present || got != want {
+			t.Fatalf("Parent(%d) = (%d, %t), want (%d, true)", key, got, present, want)
+		}
+	}
+	if _, present := result.Parent(nodes[0].Key); present {
+		t.Fatal("source node must not have a parent")
+	}
 	if _, err := Dijkstra(graph, 99); !errors.Is(err, graphcontract.ErrInvalidKey) {
 		t.Fatalf("invalid source error = %v, want ErrInvalidKey", err)
+	}
+}
+
+func TestDijkstraRejectsNegativeWeight(t *testing.T) {
+	value := "source"
+	neighborValue := "neighbor"
+	source := &graphcontract.Node[string]{Key: 1, Value: &value}
+	neighbor := &graphcontract.Node[string]{Key: 2, Value: &neighborValue}
+	graph := fixture{
+		nodes: []*graphcontract.Node[string]{source, neighbor},
+		edges: map[int][]edge{source.Key: {{to: neighbor, weight: -1}}},
+	}
+
+	if _, err := Dijkstra(graph, source.Key); !errors.Is(err, ErrNegativeWeight) {
+		t.Fatalf("negative edge error = %v, want ErrNegativeWeight", err)
 	}
 }
 

@@ -21,7 +21,9 @@ type DijkstraNode[T any] struct {
 }
 
 func Dijkstra[T any](giraffe graph.Graph[T], source_key int) (DijkstraResult, error) {
+	// distances stores the best total edge weight currently known from source_key.
 	distances := map[int]int64{source_key: 0}
+	// parents stores the predecessor key used to reach each node's best distance.
 	parents := map[int]int{}
 	result := DijkstraResult{
 		Distance: func(key int) (int64, bool) {
@@ -43,6 +45,7 @@ func Dijkstra[T any](giraffe graph.Graph[T], source_key int) (DijkstraResult, er
 		return result, graph.ErrInvalidKey
 	}
 
+	// BinaryHeap is a max-heap, so a smaller tentative distance receives higher priority.
 	heap, err := binary_heap.NewBinaryHeap[*DijkstraNode[T]](func(left *DijkstraNode[T], right *DijkstraNode[T]) int {
 		if left.distance > right.distance {
 			return -1
@@ -67,11 +70,13 @@ func Dijkstra[T any](giraffe graph.Graph[T], source_key int) (DijkstraResult, er
 			break
 		}
 
+		// A later relaxation may have queued a better candidate for this key.
 		if distances[node.node.Key] != node.distance {
 			continue
 		}
 
 		success, err := giraffe.Neighbors(node.node.Key, func(neighbor *graph.Node[T], weight int64) bool {
+			// Relaxation asks whether traveling through the popped node improves this neighbor.
 			new_distance := distances[node.node.Key] + weight
 			if weight < 0 {
 				return false
@@ -80,8 +85,10 @@ func Dijkstra[T any](giraffe graph.Graph[T], source_key int) (DijkstraResult, er
 			distance, presence := distances[neighbor.Key]
 
 			if !presence || new_distance < distance {
+				// Record both the cheaper total cost and the edge that achieved it.
 				distances[neighbor.Key] = new_distance
 				parents[neighbor.Key] = node.node.Key
+				// Push a snapshot; the older, more expensive snapshot becomes stale.
 				return heap.Push(&DijkstraNode[T]{node: neighbor, distance: new_distance})
 			}
 

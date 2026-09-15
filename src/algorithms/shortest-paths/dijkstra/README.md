@@ -15,3 +15,20 @@ Return `ErrNilGraph` for a nil graph, `graph.ErrInvalidKey` for an invalid sourc
 ## Complexity Targets
 
 O((V+E) log V) time and O(V) space.
+
+## Path Reconstruction
+
+`Distance(key)` returns the shortest total weight from the source to `key`.
+`Parent(key)` returns the predecessor key selected by the final relaxation; the
+source has no parent. Do not reverse either map. To build a source-to-target
+path, collect the target and each parent through the source into a separate key
+slice, then reverse that slice.
+
+## Verification
+
+```sh
+make contract NAME=algorithms/shortest-paths/dijkstra
+go test -tags=contract -run '^$' -bench=Dijkstra -benchmem ./src/algorithms/shortest-paths/dijkstra
+```
+
+The benchmark builds weighted chains of 256 and 1,024 nodes before timing.
