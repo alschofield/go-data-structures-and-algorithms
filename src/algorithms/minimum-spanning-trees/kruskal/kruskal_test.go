@@ -20,13 +20,13 @@ func TestKruskalMinimumSpanningForest(t *testing.T) {
 	}{
 		{"connected", undirectedFixture([]string{"a", "b", "c", "d"}, []edge{{0, 1, 4}, {0, 2, 1}, {1, 2, 2}, {1, 3, 5}, {2, 3, 3}}), []graphcontract.Edge[string]{{From: node("a", 10), To: node("c", 30), Weight: 1}, {From: node("b", 20), To: node("c", 30), Weight: 2}, {From: node("c", 30), To: node("d", 40), Weight: 3}}, 6, nil},
 		{"forest", undirectedFixture([]string{"a", "b", "c", "d"}, []edge{{0, 1, -2}, {2, 3, 4}}), []graphcontract.Edge[string]{{From: node("a", 10), To: node("b", 20), Weight: -2}, {From: node("c", 30), To: node("d", 40), Weight: 4}}, 2, nil},
-		{"directed", graphFixture{directed: true, nodes: nodes("a", "b")}, nil, 0, ErrDirectedGraph},
+		{"directed", graphFixture{directed: true, nodes: nodes("a", "b")}, nil, 0, graphcontract.ErrDirectedGraph},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			var _ graphcontract.UndirectedEdgeGraph[string] = test.graph
-			got, weight, err := KruskalMinimumSpanningForest(test.graph)
+			got, weight, err := Kruskal(test.graph)
 			if !errors.Is(err, test.err) || weight != test.weight || !reflect.DeepEqual(got, test.want) {
-				t.Fatalf("KruskalMinimumSpanningForest() = (%v, %d, %v), want (%v, %d, %v)", got, weight, err, test.want, test.weight, test.err)
+				t.Fatalf("Kruskal() = (%v, %d, %v), want (%v, %d, %v)", got, weight, err, test.want, test.weight, test.err)
 			}
 		})
 	}
