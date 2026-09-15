@@ -1,49 +1,59 @@
 # Graph
 
+## How It Works
+
+`Graph` is the read-only weighted-graph boundary shared by graph algorithms.
+Concrete representations retain their storage and expose nodes through stable keys.
+
 ## Required API
 
-`type Node[T any]` with `Key`, `Value`, `Next`, `Prev`, `Left`, `Right`,
-`Parent`, `Children`, and `Edges`; `type Edge[T any] struct { From, To
-*Node[T]; Weight int64 }`; and `type Graph[T any] interface` with `Directed()
-bool`, `NodeCount() int`, `NodeByKey(key int) (*Node[T], bool)`, and
-`Neighbors(key int, visit func(*Node[T], int64) bool) (bool, error)`.
+```go
+var ErrInvalidKey error
+var ErrDirectedGraph error
 
-`type UndirectedEdgeGraph[T any] interface` extends `Graph[T]` with
-`Edges(visit func(Edge[T]) bool) (bool, error)`.
+type Node[T any] struct {
+    Key int; Value *T
+    Occurrences int; IsEndOfWord bool; Rank int
+    Next, Prev, Left, Right, Parent *Node[T]
+    Children map[rune]*Node[T]
+    Edges []Edge[T]
+}
+
+type Edge[T any] struct { From, To *Node[T]; Weight int64 }
+
+type Graph[T any] interface {
+    Directed() bool
+    NodeCount() int
+    NodeByKey(key int) (*Node[T], bool)
+    Neighbors(key int, visit func(*Node[T], int64) bool) (bool, error)
+}
+
+type UndirectedEdgeGraph[T any] interface {
+    Graph[T]
+    Edges(visit func(Edge[T]) bool) (bool, error)
+}
+```
 
 ## Contract
 
-- `Node.Key` is a stable, unique graph identity. Keys may have gaps after node
-  removal and algorithms use them as map keys rather than array indexes.
-- `Node.Value` points to the value retained by the concrete data structure.
-  Node-backed structures reuse this record and leave links irrelevant to their
-  representation nil. Each representation owns its value lifetime and must not
-  substitute a copied or unrelated payload.
-- `Node.Occurrences` is an optional structure-owned observational metric. A
-  structure that uses it must document whether it changes mutation behavior.
-- `Node.Rank` is an optional Union-Find balancing metric. Only set roots use
-  it; it is distinct from a node's `Parent` pointer and identity `Key`.
-- `NodeByKey` returns `ok=false` for an absent key. `Neighbors` returns
-  `ErrInvalidKey` for an invalid key, visits outgoing weighted node edges in
-  deterministic order, and returns false only when its visitor requests an
-  early stop.
-- Adjacency-list and adjacency-matrix structs implement `Graph[T]` directly.
-  BSTs may implement it as a directed tree view. The interface never owns or
-  mutates representation storage.
-- Undirected representations implement `UndirectedEdgeGraph[T]` by reporting
-  each logical edge once in deterministic order. `Edges` returns
-  `ErrDirectedGraph` for a directed representation; Kruskal also rejects a
-  directed graph before reading edges.
-- Edge weights use `int64`. Traversal ignores them; Dijkstra and A-star reject
-  negative weights; Kruskal accepts signed weights for undirected graphs.
+`Node.Key` is a stable identity, not a required array index; removed nodes may
+leave gaps. `Node.Value` points to the value retained by its owning structure.
+Structures use only their applicable node links and leave unrelated fields nil.
 
-## Algorithm Consumers
+`NodeByKey` returns `ok=false` when absent. `Neighbors` returns
+`ErrInvalidKey` for an invalid key, visits outgoing weighted edges in a
+deterministic representation order, and returns `false, nil` only when the
+visitor requests an early stop. `Edges` likewise stops early; an undirected
+view reports each logical edge once in deterministic order. Directed graph
+representations return `ErrDirectedGraph` from `Edges`.
 
-- BFS and DFS accept `Graph[T]` and return visited nodes.
-- Dijkstra and A-star accept `Graph[T]` and use `Node.Key` for their distance
-  and parent state.
-- Kruskal accepts `UndirectedEdgeGraph[T]` and returns `Edge[T]` values.
+## Complexity Targets
+
+The interfaces impose no storage or operation complexity. Each concrete
+representation documents its own targets.
 
 ## Verification
 
-`make contract NAME=data-structures/graphs/graph`
+```sh
+make contract NAME=data-structures/graphs/graph
+```

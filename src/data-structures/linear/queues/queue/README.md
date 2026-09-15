@@ -1,49 +1,45 @@
 # Queue
 
 ## How It Works
-A resizable ring buffer uses wrapping head and tail indexes so FIFO operations never shift values. The buffer grows geometrically when full; during growth, values are copied from `head` in logical FIFO order into a contiguous new buffer.
+
+A resizable ring buffer wraps head and tail indexes, so FIFO operations do not
+shift values. When full, it doubles and copies values in logical FIFO order.
 
 ## Required API
-Generic `type Queue[T any]` with `NewQueue[T]()`, `Enqueue(T) bool`, `Dequeue() (T, error)`, `Peek() (T, error)`, `Len() int`, and `IsEmpty() bool`.
 
-## Contract
-`Enqueue` adds a value at the back and returns `true`. `Dequeue` and `Peek` return the oldest value; only `Dequeue` removes it. On an empty queue, both return the zero value of `T` and the exported sentinel `ErrEmptyQueue` directly, without mutation. Successful `Dequeue` and `Peek` calls return a nil error. Do not use a library queue/container.
+```go
+var ErrEmptyQueue error
 
-## Ring-Buffer Invariants
+type Queue[T any] struct
 
-- `size` is the number of logical values and satisfies `0 <= size <= len(items)`.
-- `head` identifies the oldest value when `size > 0`.
-- `tail` identifies the next writable slot; both indexes wrap with modulo `len(items)`.
-- `head == tail` is ambiguous without `size`: the queue may be empty or full.
-- After a resize, the FIFO sequence occupies `items[0:size]`, `head` is zero, and `tail` is `size`.
-
-`Dequeue` assigns the zero value of `T` to its removed backing-buffer slot before advancing `head`. This releases retained references so their referents are eligible for garbage collection while the buffer capacity remains reusable.
-
-## Complexity Targets
-`Enqueue` is amortized O(1), including occasional O(n) growth copies. `Dequeue`, `Peek`, `Len`, and `IsEmpty` are O(1). The queue uses O(n) contiguous space, including retained backing-buffer capacity.
-
-## Benchmarks
-
-```sh
-make benchmark NAME=data-structures/linear/queues/queue
+func NewQueue[T any]() *Queue[T]
+func (q *Queue[T]) Enqueue(value T) bool
+func (q *Queue[T]) Dequeue() (T, error)
+func (q *Queue[T]) Peek() (T, error)
+func (q *Queue[T]) Len() int
+func (q *Queue[T]) IsEmpty() bool
 ```
 
-The deterministic benchmark reports allocations with `-benchmem`, validates final state, and writes operation results to package-level sinks to prevent compiler elimination. It covers `Enqueue`, `Dequeue`, and `Peek` at sizes 0 or 1, 1,024, and 65,536 as applicable, plus steady-state wrapped dequeue/enqueue and a growth from a full wrapped buffer.
+## Contract
 
-Run the command on the target machine before comparing changes. Record results with the Go version, OS/architecture, and CPU model because benchmark numbers vary by environment.
+The zero value is a usable empty queue. `Enqueue` appends and returns true.
+`Dequeue` and `Peek` return the oldest value; only `Dequeue` removes it. Empty
+reads return the zero value of `T` and `ErrEmptyQueue` without mutation.
+Successful reads return nil error. Dequeue clears its removed backing slot before
+advancing head so references are not retained by reusable capacity.
 
-Measured once with Go 1.25.5 on Windows/amd64 (11th Gen Intel Core i9-11900K @ 3.50GHz):
+`size` is the number of logical values, `head` identifies the oldest value, and
+`tail` identifies the next writable slot. Both indexes wrap modulo buffer length;
+`size` distinguishes a full buffer from an empty one when head equals tail. After
+growth, values occupy the leading contiguous slots, with head zero and tail size.
 
-| Operation | Size | ns/op | B/op | allocs/op |
-| --- | ---: | ---: | ---: | ---: |
-| Enqueue | 0 | 15.84 | 31 | 0 |
-| Enqueue | 1,024 | 12.19 | 22 | 0 |
-| Enqueue | 65,536 | 13.20 | 25 | 0 |
-| Dequeue | 0 | 6.049 | 0 | 0 |
-| Dequeue | 1,024 | 5.520 | 0 | 0 |
-| Dequeue | 65,536 | 5.032 | 0 | 0 |
-| Peek | 1 | 0.7731 | 0 | 0 |
-| Peek | 1,024 | 0.6958 | 0 | 0 |
-| Peek | 65,536 | 0.9313 | 0 | 0 |
-| Wraparound | 2 | 8.133 | 0 | 0 |
-| Grow wrapped | 1,024 | 7,081 | 16,384 | 1 |
+## Complexity Targets
+
+`Enqueue` is amortized O(1), including O(n) growth copies. `Dequeue`, `Peek`,
+`Len`, and `IsEmpty` are O(1). Space is O(n), including retained capacity.
+
+## Verification
+
+```sh
+make contract NAME=data-structures/linear/queues/queue
+```

@@ -1,46 +1,37 @@
 # Binary Search
 
 ## How It Works
-Compare sorted input's middle element and discard one candidate half per step.
+
+Compare the key with the middle item of an ascending slice, then discard the
+half that cannot contain a match. Repeat until finding an equal item or
+exhausting the candidate range.
 
 ## Required API
-`func BinarySearch[T any](items []T, key T, compare func(T,T) int) (int, bool, error)`.
 
-## Verified Behavior
-`BinarySearch` requires input sorted in ascending order according to `compare`.
-It does not sort or validate `items`, so results for unsorted input are not
-defined by this API. It never modifies input and does not use a standard-library
-search routine.
-
-A match returns `(index, true, nil)`. For duplicates, any index containing a
-matching item is valid. A missing key, including an empty or nil slice, returns
-`(0, false, nil)`. A nil `compare` function returns
-`(0, false, ErrNilComparator)`; callers can identify that sentinel with
-`errors.Is`.
-
-## Complexity Targets
-Best O(1), average/worst O(log n), O(1) iterative space.
-
-## Benchmarks
-The benchmark uses deterministic ascending integer slices of 1,000, 16,000,
-and 1,000,000 elements, looking up the final element. It checks each result and
-writes it to package-level sinks so the compiler cannot remove the work.
-Allocation reporting is enabled.
-
-Run it with:
-
-```sh
-go test -tags=contract -run '^$' -bench BenchmarkBinarySearchPresentLast -benchmem ./src/algorithms/searching/binary-search
+```go
+func BinarySearch[T any](
+    items []T,
+    key T,
+    compare func(T, T) int,
+) (int, bool, error)
 ```
 
-Measured once with Go 1.25.5 on Windows/amd64 (11th Gen Intel Core i9-11900K
-@ 3.50GHz):
+## Contract
 
-| Input size | ns/op | B/op | allocs/op |
-| ---: | ---: | ---: | ---: |
-| 1,000 | 22.03 | 0 | 0 |
-| 16,000 | 34.30 | 0 | 0 |
-| 1,000,000 | 46.00 | 0 | 0 |
+`items` must already be ascending according to `compare`; the function does not
+sort or validate that precondition. It does not mutate `items`. A match returns
+`(index, true, nil)`. When duplicates match, any matching index is valid. A
+missing key, including on a nil or empty slice, returns `(0, false, nil)`.
 
-These are machine-specific regression evidence, not portable performance
-claims. The final-element workload reflects logarithmic candidate elimination.
+A nil comparator returns `(0, false, ErrNilComparator)` before examining the
+slice. The boolean distinguishes a match at index zero from a miss.
+
+## Complexity Targets
+
+Best O(1), average and worst O(log n) time; O(1) auxiliary space.
+
+## Verification
+
+```sh
+make contract NAME=algorithms/searching/binary-search
+```

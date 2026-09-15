@@ -1,24 +1,42 @@
 # Prefix Trie
 
 ## How It Works
-Tree edges are characters; root-to-node paths are prefixes and an end marker distinguishes keys from waypoints.
+
+Rune-keyed child edges form shared prefixes. A terminal marker distinguishes a
+stored word from a node that is only a prefix.
 
 ## Required API
-`type PrefixTrie` with `NewPrefixTrie()`, `Insert(string) bool`, `Contains(string) bool`, `StartsWith(string) bool`, `Remove(string) bool`, and `Len() int`. Internal trie nodes use `graph.Node[string]` and its `Children` map; graph-unrelated links remain nil.
+
+```go
+type PrefixTrie struct
+
+func NewPrefixTrie() *PrefixTrie
+func (pt *PrefixTrie) Insert(str string) bool
+func (pt *PrefixTrie) Contains(str string) bool
+func (pt *PrefixTrie) StartsWith(str string) bool
+func (pt *PrefixTrie) Remove(str string) bool
+func (pt *PrefixTrie) Len() int
+```
 
 ## Contract
-Duplicate insertion is idempotent. Contains matches complete keys, StartsWith accepts empty prefix, and Remove rejects a path that is not a stored word. Removal clears only the terminal marker, preserves longer shared-prefix words, and prunes only nodes no remaining key needs. Trie traversal is rune-aware. Do not use a library trie/map.
+
+`Insert` returns true only for a newly stored word; duplicate insertion is
+idempotent. `Contains` requires a terminal word marker, while `StartsWith`
+returns true for every existing prefix, including the empty string. The trie is
+rune-aware, so multibyte Unicode characters occupy one edge each.
+
+`Remove` returns false for an empty string, a missing path, or a path that is
+not a stored word. A successful removal clears only that terminal marker and
+prunes nodes only when no stored word requires them. It preserves longer words
+and shared prefixes. `Len` is the number of stored words, not trie nodes.
+Internal nodes use `graph.Node[string]`, `Children`, and `IsEndOfWord`.
 
 ## Complexity Targets
-Core operations O(m) for key length independent of key count; O(total stored characters) space.
+
+All key operations are O(m) for rune length m; space is O(total stored runes).
 
 ## Verification
 
 ```sh
 make contract NAME=data-structures/trees/tries/prefix-trie
-go test -tags=contract -run '^$' -bench=PrefixTrie -benchmem ./src/data-structures/trees/tries/prefix-trie
 ```
-
-Benchmarks cover full insertion, exact contains, shared-prefix lookup, and
-structural removal at 256 and 1,024 keys. Insert and remove workloads include
-fresh trie construction; read workloads prebuild a trie before timing.

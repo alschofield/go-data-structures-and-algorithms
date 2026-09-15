@@ -2,22 +2,39 @@
 
 ## How It Works
 
-Kruskal collects each undirected edge once, considers edges in nondecreasing weight order, and uses union-find to accept only edges connecting two distinct components. The result is a minimum spanning forest.
+Kruskal considers logical undirected edges by nondecreasing weight and accepts
+an edge only when union-find shows that its endpoints are in different
+components. The accepted edges form a minimum spanning forest.
 
 ## Required API
 
-`func KruskalMinimumSpanningForest[T any](graph graph.UndirectedEdgeGraph[T]) ([]graph.Edge[T], int64, error)`.
+```go
+func KruskalMinimumSpanningForest[T any](
+    inputGraph graph.UndirectedEdgeGraph[T],
+) ([]graph.Edge[T], int64, error)
+```
+
+The result is the selected forest and its total weight.
 
 ## Contract
 
-- Return `ErrNilGraph` for a nil graph and `ErrDirectedGraph` for a directed graph without partial output.
-- Consume each logical undirected edge exactly once through `Edges`; handle its
-  directed-graph or iteration error and never reconstruct edges from mirrored
-  neighbor storage.
-- Return a minimum spanning forest for disconnected input, with no cycles and its exact summed weight. Negative weights are valid.
-- Empty and one-node graphs succeed with an empty edge slice and zero total weight. Resolve equal-weight ties deterministically by normalized `(From.Key, To.Key)`.
-- Collect and sort edges and implement disjoint-set work directly; do not use a library graph algorithm, `sort`, or a library union-find substitute.
+The tagged contract requires a connected graph to return its minimum spanning
+tree, and a disconnected graph to return a minimum spanning forest. Negative
+edge weights are valid. A directed graph returns `(nil, 0, ErrDirectedGraph)`.
+The returned edges must not form a cycle, and their weights must sum exactly to
+the reported total.
+
+Use `Edges` as the logical-edge source rather than reconstructing undirected
+edges from neighbors. The current package has no implementation; behavior not
+exercised by the contract, including nil input and equal-weight tie ordering,
+is not yet specified.
 
 ## Complexity Targets
 
-`O(E log E + E alpha(V))` time and `O(E + V)` space.
+O(E log E + E alpha(V)) time and O(E+V) space.
+
+## Verification
+
+```sh
+make contract NAME=algorithms/minimum-spanning-trees/kruskal
+```

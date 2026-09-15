@@ -1,32 +1,43 @@
 # Union-Find
 
 ## How It Works
-Parent-pointer trees represent sets; path compression and union by rank keep them nearly flat.
+
+Parent-pointer trees represent disjoint sets. Union by rank keeps trees shallow
+and `Find` applies path halving while walking toward a representative.
 
 ## Required API
-`type UnionFind` with `NewUnionFind(elementCount int) (*UnionFind, error)`,
-`Find(int) (int,bool,error)`, `Union(int,int) (bool,error)`, `Connected(int,int)
-(bool,error)`, and `SetCount() int`.
+
+```go
+var ErrInvalidCapacity error
+var ErrInvalidIndex error
+
+type UnionFind struct
+
+func NewUnionFind(count int) (*UnionFind, error)
+func (uf *UnionFind) Find(index int) (int, bool, error)
+func (uf *UnionFind) Union(thingOne, thingTwo int) (bool, error)
+func (uf *UnionFind) Connected(thingOne, thingTwo int) (bool, error)
+func (uf *UnionFind) SetCount() int
+```
 
 ## Contract
-`NewUnionFind` returns `ErrInvalidCapacity` for a negative element count.
-Elements are `[0,n)` and start singleton; an out-of-range element returns
-`ErrInvalidIndex`. Find uses path halving; Union returns `false, nil` for an
-existing connection and does not alter rank/count. Only representative equality
-is observable. Each element uses a shared `graph.Node[struct{}]`: `Key` is its
-element ID and `Parent` is the disjoint-set parent link. Do not use a library
-disjoint-set type.
+
+Construction rejects a negative count with `ErrInvalidCapacity`; elements are
+`[0, count)` and initially form singleton sets. Invalid elements return
+`ErrInvalidIndex`. A successful `Find` returns a representative key and
+`ok=true`. `Union` returns `true` only when it merges distinct sets; an already
+connected pair returns `false, nil` and preserves the set count. `Connected`
+compares representatives. Each element is a `graph.Node[struct{}]` whose `Key`
+is its element ID, `Parent` is its set parent, and `Rank` is meaningful only for
+roots.
 
 ## Complexity Targets
-Find/Union/Connected amortized O(alpha(n)); construction O(n); O(n) space.
+
+Construction is O(n); `Find`, `Union`, and `Connected` are amortized
+O(alpha(n)); space is O(n).
 
 ## Verification
 
 ```sh
 make contract NAME=data-structures/graphs/disjoint-sets/union-find
-go test -tags=contract -run '^$' -bench=UnionFind -benchmem ./src/data-structures/graphs/disjoint-sets/union-find
 ```
-
-Benchmarks cover compressed find, representative comparison through Connected,
-and a fresh-set union workload at 256 and 1,024 elements. Setup constructs a
-connected set before timed find and connectivity workloads.

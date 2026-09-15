@@ -1,40 +1,51 @@
 # Adjacency Matrix
 
+## How It Works
+
+An N by N matrix stores an edge record at each source-key and destination-key
+cell. Undirected graphs mirror each logical edge in its reciprocal cell.
+
 ## Required API
 
-`type AdjacencyMatrix[T any]` with `NewAdjacencyMatrix[T](directed bool)`,
-`AddVertex(value *T) *graph.Node[T]`, `NodeByKey(key int)
-(*graph.Node[T], bool)`, `AddEdge(from_key, to_key int, weight int64)
-(bool, error)`, `RemoveEdge(from_key, to_key int) (bool, error)`,
-`HasEdge(from_key, to_key int) (bool, error)`, `Neighbors(key int,
-func(*graph.Node[T], int64) bool) (bool, error)`, `NodeCount() int`, and
-`EdgeCount() int`. It implements `graph.Graph[T]`; undirected instances also
-implement `graph.UndirectedEdgeGraph[T]` with `Edges(func(graph.Edge[T]) bool)
-(bool, error)`.
+```go
+type AdjacencyMatrix[T any] struct
+
+func NewAdjacencyMatrix[T any](directed bool) *AdjacencyMatrix[T]
+func (am *AdjacencyMatrix[T]) AddVertex(value *T) *graph.Node[T]
+func (am *AdjacencyMatrix[T]) NodeByKey(key int) (*graph.Node[T], bool)
+func (am *AdjacencyMatrix[T]) AddEdge(fromKey, toKey int, weight int64) (bool, error)
+func (am *AdjacencyMatrix[T]) RemoveEdge(fromKey, toKey int) (bool, error)
+func (am *AdjacencyMatrix[T]) HasEdge(fromKey, toKey int) (bool, error)
+func (am *AdjacencyMatrix[T]) Neighbors(key int, visit func(*graph.Node[T], int64) bool) (bool, error)
+func (am *AdjacencyMatrix[T]) NodeCount() int
+func (am *AdjacencyMatrix[T]) EdgeCount() int
+func (am *AdjacencyMatrix[T]) Directed() bool
+func (am *AdjacencyMatrix[T]) Edges(visit func(graph.Edge[T]) bool) (bool, error)
+```
+
+It implements `graph.Graph[T]`; undirected instances also provide
+`graph.UndirectedEdgeGraph[T]`.
 
 ## Contract
 
-`AddVertex` retains the caller-provided value pointer in a node with a stable,
-unique key and cannot fail. `NodeByKey` reports an absent key with `ok=false`.
-Operations supplied invalid keys return `graph.ErrInvalidKey` and preserve state.
-Undirected mutations update symmetric cells while `Edges` reports each
-logical edge once in row-major key order. Duplicate add and absent remove are
-clean no-ops. `Edges` rejects a directed instance with
-`graph.ErrDirectedGraph`. Neighbor walking scans a row and stops when its
-visitor returns false; do not substitute another representation.
+`AddVertex` retains the supplied value pointer and returns a node with a stable,
+unique key. `NodeByKey` returns `ok=false` when absent. Edge operations validate
+both keys and return `graph.ErrInvalidKey` without mutation when either is
+invalid. Duplicate adds and absent removals return `false, nil`.
+
+`EdgeCount` counts logical edges. An undirected mutation updates both cells;
+`Edges` reports each logical edge once in row-major key order. `Edges` on a
+directed matrix returns `graph.ErrDirectedGraph`. `Neighbors` scans a row in
+ascending key order and returns `false, nil` on visitor early stop. Self-loops
+and signed weights are stored without restriction.
 
 ## Complexity Targets
 
-AddVertex O(N^2); Add/Remove/HasEdge O(1); neighbors O(N); full traversal O(N^2); O(N^2) space.
+`AddVertex` is O(N^2); `AddEdge`, `RemoveEdge`, and `HasEdge` are O(1);
+`Neighbors` is O(N); `Edges` is O(N^2); space is O(N^2).
 
 ## Verification
 
 ```sh
 make contract NAME=data-structures/graphs/representations/adjacency-matrix
-go test -tags=contract -run '^$' -bench=AdjacencyMatrix -benchmem ./src/data-structures/graphs/representations/adjacency-matrix
 ```
-
-Benchmarks cover edge insertion, present-edge lookup, and full row scans at
-256 and 1,024 nodes. Setup constructs the needed matrix before timed lookup
-and traversal workloads; insertion measures fresh matrix construction plus its
-final edge insertion.

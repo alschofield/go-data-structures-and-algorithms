@@ -64,3 +64,19 @@ the plan above to keep workload construction and validation consistent.
 `benchmark_template_test.go` is the minimal reusable `testing.B` shape; copy it
 into the named leaf, replace `Skip` with its documented workload, and retain
 the `-benchmem` command above.
+
+## Shortest-Path Results
+
+Run the A* leaf benchmark with:
+
+```sh
+go test -tags=contract -run '^$' -bench=AStar -benchmem ./src/algorithms/shortest-paths/a-star
+```
+
+It contrasts a zero heuristic, which behaves as Dijkstra, with an exact
+remaining-distance estimate on a weighted chain. The comparison demonstrates
+frontier prioritization only; both workloads must return the same optimal path.
+Record machine-specific results with the Go version, CPU, and command output
+when establishing a baseline. Do not compare those values directly to C's
+nanosecond results: the harnesses, allocation models, compilers, and runtimes
+are different.

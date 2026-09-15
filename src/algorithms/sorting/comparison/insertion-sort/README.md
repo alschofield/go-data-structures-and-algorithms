@@ -1,27 +1,32 @@
 # Insertion Sort
 
 ## How It Works
-Grow a sorted prefix, shifting strictly greater items right before each insertion.
+
+Grow a sorted prefix one item at a time, shifting only strictly greater prefix
+items right until the next item can be inserted.
 
 ## Required API
-`func InsertionSort[T any](items []T, compare func(T,T) int) (bool, error)`.
+
+```go
+func InsertionSort[T any](items []T, compare func(T, T) int) (bool, error)
+```
+
+`compare` orders values below zero, equal values at zero, and later values above
+zero.
 
 ## Contract
-Sort ascending in place and remain stable by inserting after equals.
-Empty/singleton input is a successful no-op. Success returns `(true, nil)`. A
-nil comparator returns `(false, ErrNilComparator)` without changing input. Do
-not call `sort`.
+
+Sort `items` ascending in place and return `(true, nil)`, including for nil,
+empty, and singleton slices. Do not move equal items past one another, so the
+sort is stable. A nil comparator returns `(false, ErrNilComparator)` before
+modifying `items`.
 
 ## Complexity Targets
-Best O(n), average/worst O(n^2), O(1) space.
+
+Best O(n), average and worst O(n^2) time; O(1) auxiliary space.
 
 ## Verification
 
 ```sh
 make contract NAME=algorithms/sorting/comparison/insertion-sort
-go test -tags=contract -run '^$' -bench=InsertionSort -benchmem ./src/algorithms/sorting/comparison/insertion-sort
 ```
-
-The benchmark covers sorted, nearly-sorted, and reverse integer inputs at 256
-and 1,024 items. Each iteration restores a preallocated slice from the named
-input before sorting, and the final output is checked after the benchmark loop.

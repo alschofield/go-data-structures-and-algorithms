@@ -2,35 +2,42 @@
 
 ## How It Works
 
-An explicit or call-stack frontier explores one branch as far as possible before backtracking.
+A LIFO stack explores the most recently discovered branch before backtracking.
+Mark a key visited when it is pushed so cycles and converging edges cannot push
+it again.
 
 ## Required API
 
-`func DepthFirstSearch[T any](input_graph graph.Graph[T], source_key int,
-visit func(*graph.Node[T]) bool) ([]*graph.Node[T], bool, error)`.
+```go
+func DepthFirstSearch[T any](
+    input_graph graph.Graph[T],
+    source_key int,
+    visit func(*graph.Node[T]) bool,
+) ([]*graph.Node[T], bool, error)
+```
+
+The returned slice is the pop order. `visit` returning `false` stops after the
+current node has been appended to that slice.
 
 ## Contract
 
-Use a visited set of node keys and visit each reachable node once. Return
-`ErrNilGraph` for a nil graph, `ErrNilVisit` for a nil visitor, and
-`graph.ErrInvalidKey` for an invalid source key; propagate errors from
-`Graph.Neighbors`. Handle cycles, self-loops, and disconnected graphs without
-mutation; ignore edge weights. Nodes are pushed in neighbor iteration order, so
-the most recently enumerated neighbor is visited first. Return nodes in visit
-order with their retained value pointers. The boolean is true for full
-exhaustion or a visitor-requested successful stop; otherwise it is false with
-any partial path and available error. Do not use a library traversal.
+Return an empty path and `false` with `ErrNilGraph` for a nil graph,
+`ErrNilVisit` for a nil visitor, or `graph.ErrInvalidKey` for an invalid or nil
+source node. Propagate an error from `Graph.Neighbors` with the path accumulated
+so far and a `false` completion result. Ignore edge weights, do not mutate the
+graph, and visit each reachable key at most once. The boolean is `true` after
+exhaustive traversal and after a visitor-requested stop; a graph that ends
+neighbor iteration early returns its partial path with `false` and no error.
+
+Neighbors are pushed in graph iteration order, so the last enumerated neighbor
+is popped first. Disconnected nodes are not returned.
 
 ## Complexity Targets
 
-O(V+E) time and O(V) space.
+O(V+E) time and O(V) space with adjacency lists.
 
 ## Verification
 
 ```sh
 make contract NAME=algorithms/graph-traversal/depth-first-search
-go test -tags=contract -run '^$' -bench=DepthFirstSearch -benchmem ./src/algorithms/graph-traversal/depth-first-search
 ```
-
-Benchmarks cover a full wide depth traversal and a visitor-requested stop at 256
-and 1,024 nodes. The adjacency-list graph is built before timing.

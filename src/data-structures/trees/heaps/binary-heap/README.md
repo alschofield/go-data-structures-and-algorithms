@@ -1,31 +1,46 @@
 # Binary Heap
 
 ## How It Works
-A contiguous complete tree uses `2i+1` and `2i+2` child indexes, holding the comparison extreme at the root.
+
+A contiguous complete binary tree keeps the comparison maximum at its root.
+Children of index `i` are at `2i+1` and `2i+2`; pushes sift up and pops sift down.
 
 ## Required API
-Generic `type BinaryHeap[T any]` with
-`NewBinaryHeap(compare func(T,T) int) (*BinaryHeap[T], error)`, `Push(T) bool`,
-`Pop() (T,bool)`, `Peek() (T,bool)`, `Len`, and `IsEmpty`.
+
+```go
+var ErrNilComparator error
+
+type BinaryHeap[T any] struct
+
+func NewBinaryHeap[T any](compare func(T, T) int) (*BinaryHeap[T], error)
+func (bh *BinaryHeap[T]) Push(value T) bool
+func (bh *BinaryHeap[T]) Pop() (T, bool)
+func (bh *BinaryHeap[T]) Peek() (T, bool)
+func (bh *BinaryHeap[T]) Len() int
+func (bh *BinaryHeap[T]) IsEmpty() bool
+```
 
 ## Contract
-`NewBinaryHeap` returns `ErrNilComparator` for a nil comparator. Push appends
-then sifts up; Pop and Peek on an empty heap return `ok=false`, not an error.
-Equal priorities have no stable ordering. Grow geometrically using a contiguous
-slice of shared `*graph.Node[T]` records; implicit child positions use `2i+1`
-and `2i+2`, so explicit Left and Right links remain unused. Do not use a library heap.
+
+Construction rejects a nil comparator with `ErrNilComparator`. The comparator
+must return a positive result when its first value has higher priority; this is
+a max-heap. For example, `func(a, b int) int { return a - b }` pops largest
+integers first. A comparator that reverses that relation produces a min-priority
+heap. Equal priorities have no stable pop order.
+
+`Push` always returns true. `Pop` and `Peek` return the zero value of `T` and
+`ok=false` when empty without mutation; otherwise `Peek` preserves the heap and
+`Pop` removes the root. The backing slice holds `graph.Node[T]` records with
+stable insertion keys, but node positions change as values sift. Explicit child
+links are unused.
 
 ## Complexity Targets
-Push/Pop O(log n), Peek/Len/IsEmpty O(1), bottom-up heapify O(n), O(n) contiguous space.
+
+`Push` and `Pop` are O(log n); `Peek`, `Len`, and `IsEmpty` are O(1); space is
+O(n).
 
 ## Verification
 
 ```sh
 make contract NAME=data-structures/trees/heaps/binary-heap
-go test -tags=contract -run '^$' -bench=BinaryHeap -benchmem ./src/data-structures/trees/heaps/binary-heap
 ```
-
-Benchmarks cover random and ascending full-heap construction, full removal from
-a random heap, and a steady mixed push-pop workload at 256 and 1,024 nodes.
-Full-build and full-removal workloads include their required setup; the mixed
-workload prebuilds one heap before timing.

@@ -1,24 +1,35 @@
 # Radix Sort
 
 ## How It Works
-Four stable counting-sort passes process `uint32` bytes from least to most
-significant: shifts `0`, `8`, `16`, and `24`.
+
+Four stable counting passes process `uint32` bytes from least to most
+significant at shifts `0`, `8`, `16`, and `24`. Each pass emits a separate
+buffer, and the final buffer is copied back to `items`.
 
 ## Required API
-`func RadixSort(items []uint32) bool`.
+
+```go
+func RadixCount(items []uint32, shift uint) ([]uint32, bool)
+func RadixSort(items []uint32) bool
+```
+
+`RadixCount` returns a newly allocated stable ordering by the byte at `shift`.
 
 ## Contract
-Use stable per-byte counting sorts in LSD order. Each pass counts byte keys,
-prefix-sums them into output offsets, and moves complete values into a buffer.
-Success returns `true`; nil, empty, and singleton input are successful no-ops.
-Do not compare keys or call `sort`.
+
+`RadixSort` orders `items` ascending in place and returns `true`; nil, empty,
+and singleton slices are successful no-ops. `RadixCount` returns `true` with a
+new output slice whose equal-byte values retain input order. `RadixSort` relies
+on that stability across all four byte passes. Neither function reports an
+error or accepts a comparator.
 
 ## Complexity Targets
-Best/average/worst O(d(n+k)), O(n+k) auxiliary space.
 
-For `uint32`, `d` is four and `k` is 256.
+For `uint32`, O(n+256) time and O(n+256) auxiliary space: four passes make the
+constant digit count independent of input size.
 
 ## Verification
-`make contract NAME=algorithms/sorting/non-comparison/radix-sort`
 
-`go test -tags=contract -bench=. ./src/algorithms/sorting/non-comparison/radix-sort`
+```sh
+make contract NAME=algorithms/sorting/non-comparison/radix-sort
+```

@@ -1,42 +1,53 @@
 # Adjacency List
 
+## How It Works
+
+Each node owns its outgoing weighted edges. Undirected graphs store reciprocal
+arcs while tracking and exposing one logical edge.
+
 ## Required API
 
-`type AdjacencyList[T any]` with `NewAdjacencyList[T](directed bool)`,
-`AddVertex(value *T) *graph.Node[T]`,
-`NodeByKey(key int) (*graph.Node[T], bool)`, `AddEdge(from_key, to_key
-int, weight int64) (bool, error)`, `RemoveEdge(from_key, to_key int) (bool,
-error)`, `HasEdge(from_key, to_key int) (bool, error)`, `Neighbors(key int,
-func(*graph.Node[T], int64) bool) (bool, error)`, `NodeCount() int`, and
-`EdgeCount() int`. It implements `graph.Graph[T]`; undirected instances also
-implement `graph.UndirectedEdgeGraph[T]` with `Edges(func(graph.Edge[T]) bool)
-(bool, error)`.
+```go
+type AdjacencyList[T any] struct
+
+func NewAdjacencyList[T any](directed bool) *AdjacencyList[T]
+func (al *AdjacencyList[T]) AddVertex(value *T) *graph.Node[T]
+func (al *AdjacencyList[T]) NodeByKey(key int) (*graph.Node[T], bool)
+func (al *AdjacencyList[T]) AddEdge(fromKey, toKey int, weight int64) (bool, error)
+func (al *AdjacencyList[T]) RemoveEdge(fromKey, toKey int) (bool, error)
+func (al *AdjacencyList[T]) HasEdge(fromKey, toKey int) (bool, error)
+func (al *AdjacencyList[T]) Neighbors(key int, visit func(*graph.Node[T], int64) bool) (bool, error)
+func (al *AdjacencyList[T]) NodeCount() int
+func (al *AdjacencyList[T]) EdgeCount() int
+func (al *AdjacencyList[T]) Directed() bool
+func (al *AdjacencyList[T]) Edges(visit func(graph.Edge[T]) bool) (bool, error)
+```
+
+It implements `graph.Graph[T]`; undirected instances also provide
+`graph.UndirectedEdgeGraph[T]`.
 
 ## Contract
 
-`AddVertex` retains the caller-provided value pointer in a node with a stable,
-unique key. It cannot fail. `NodeByKey` reports an absent key with `ok=false`;
-operations supplied invalid keys return `graph.ErrInvalidKey` and preserve state.
-Undirected graphs store mirrored adjacency but `Edges` reports each
-logical edge once in insertion order and rejects directed instances with
-`graph.ErrDirectedGraph`. Reject duplicate edges, permit self-loops
-and negative weights, and visit outgoing edges once in insertion order. Do not
-use a library graph type.
+`AddVertex` retains the supplied value pointer and returns a stable, unique key.
+`NodeByKey` returns `ok=false` when absent. Edge operations validate both keys
+and return `graph.ErrInvalidKey` without mutation when either is invalid.
+Duplicate adds and absent removals return `false, nil`; self-loops and signed
+weights are permitted.
+
+`EdgeCount` counts logical edges. Undirected non-self-loop edges store reciprocal
+arcs; `Edges` reports only the lower-key orientation, in node and adjacency
+insertion order. `Edges` on a directed list returns `graph.ErrDirectedGraph`.
+`Neighbors` visits outgoing edges in insertion order and returns `false, nil`
+on visitor early stop.
 
 ## Complexity Targets
 
-`AddVertex` and `NodeByKey` are O(1). `Neighbors`, `HasEdge`, duplicate-aware
-`AddEdge`, and `RemoveEdge` are O(deg(u)); `Edges` is O(V+E). Full traversal is
-O(V+E) with O(V+E) space.
+`AddVertex` and `NodeByKey` are O(1). `Neighbors`, `HasEdge`, `AddEdge`, and
+`RemoveEdge` are O(deg(u)); `Edges` and full traversal are O(V+E); space is
+O(V+E).
 
 ## Verification
 
 ```sh
 make contract NAME=data-structures/graphs/representations/adjacency-list
-go test -tags=contract -run '^$' -bench=AdjacencyList -benchmem ./src/data-structures/graphs/representations/adjacency-list
 ```
-
-Benchmarks cover edge insertion, present-edge lookup, and full neighbor walking
-at 256 and 1,024 nodes. Setup constructs the needed graph before timed lookup
-and traversal workloads; insertion measures a fresh graph construction plus its
-final edge insertion.

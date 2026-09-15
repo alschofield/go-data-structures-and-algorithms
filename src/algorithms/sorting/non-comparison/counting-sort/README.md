@@ -1,23 +1,31 @@
 # Counting Sort
 
 ## How It Works
-Count keys in `[0,keyLimit)`, then rewrite the input in key order using each
-frequency count.
+
+Count occurrences of each key in `[0, keyLimit)`, then rewrite `items` in
+ascending key order by consuming those counts.
 
 ## Required API
-`func CountingSort(items []uint32, keyLimit uint32) (bool, error)`.
+
+```go
+func CountingSort(items []uint32, keyLimit uint32) (bool, error)
+```
 
 ## Contract
-Use no comparisons. Success returns `(true, nil)`. Validate all keys before
-mutation; a key outside `[0,keyLimit)` returns `(false, ErrKeyOutOfRange)` and
-leaves input unchanged. A zero `keyLimit` is valid only for empty input. This
-in-place `[]uint32` form has no distinct equal payloads to preserve. Do not call
-`sort`.
+
+Sort `items` in place and return `(true, nil)`. Every value must be less than
+`keyLimit`; validate the complete input before rewriting it. If any value is out
+of range, return `(false, ErrKeyOutOfRange)` and leave `items` unchanged. A zero
+`keyLimit` succeeds for empty input and rejects any non-empty input. This API
+sorts bare `uint32` values, so it has no distinct equal payloads whose order
+could be observed.
 
 ## Complexity Targets
-Best/average/worst O(n+k), O(k) auxiliary space.
+
+O(n+k) time and O(k) auxiliary space, where `k` is `keyLimit`.
 
 ## Verification
-`make contract NAME=algorithms/sorting/non-comparison/counting-sort`
 
-`go test -tags=contract -bench=. ./src/algorithms/sorting/non-comparison/counting-sort`
+```sh
+make contract NAME=algorithms/sorting/non-comparison/counting-sort
+```
