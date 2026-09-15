@@ -58,12 +58,12 @@ or recover from a panic as an invalid-input outcome.
 | a-star | zero versus admissible heuristic; reachable versus unreachable goal |
 | kruskal | sparse/dense undirected graphs; connected tree versus forest |
 
-Each leaf's `*_test.go` contract file is the benchmark scaffold location: add
-`BenchmarkXxx` functions beside its contract tests after the API compiles. Use
-the plan above to keep workload construction and validation consistent.
+Add `BenchmarkXxx` functions beside each leaf's contract tests. Use the plan
+above to keep workload construction and validation consistent.
 `benchmark_template_test.go` is the minimal reusable `testing.B` shape; copy it
 into the named leaf, replace `Skip` with its documented workload, and retain
-the `-benchmem` command above.
+the `-benchmem` command above. Contract correctness is a prerequisite for every
+benchmark, and all 28 current leaf contract suites pass under `-tags=contract`.
 
 ## Shortest-Path Results
 

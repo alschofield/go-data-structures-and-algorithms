@@ -62,29 +62,30 @@ unfinished production declaration during default validation.
 
 ## Status
 
-Contract-passing leaves: stack, queue, singly linked list, doubly linked list,
-hash table, graph interface, linear search, binary search, bubble sort,
-selection sort, insertion sort, merge sort, quick sort, heap sort, counting
-sort, and radix sort.
+All 28 taxonomy leaves compile and pass their opt-in contract suites:
 
-The remaining learner-owned leaves are binary search tree, prefix trie, binary
-heap, adjacency list, adjacency matrix, union-find, BFS, DFS, Dijkstra, A*, and
-Kruskal. A leaf becomes available to contract tests only after its documented
-API has been implemented.
+```sh
+go test -tags=contract ./...
+```
+
+This includes every linear, associative, tree, graph, search, sort, traversal,
+shortest-path, and minimum-spanning-tree leaf. Each leaf README is the
+authoritative API and behavioral contract; benchmark coverage is tracked in
+`bench/README.md` and each completed graph algorithm's own README.
 
 ## TDD Workflow
 
-Default tests deliberately exclude unfinished contract tests, so a fresh clone
-remains usable. After implementing a leaf, compile and run its contracts:
+Default tests deliberately exclude contract tests, so a fresh clone remains
+usable. Run an individual leaf contract while implementing or reviewing it:
 
 ```sh
 make contract NAME=data-structures/linear/stacks/stack
 make contract NAME=algorithms/graph-traversal/breadth-first-search
 ```
 
-The `contract` build tag is intentional, not an implementation escape hatch:
-remove no tags from the tests. The learner's production API makes the test
-package compile; the behavioral assertions then drive the implementation.
+The `contract` build tag is intentional, not an implementation escape hatch.
+Keep it on all contract suites so the default test path remains fast and the
+full contract gate remains explicit.
 
 ## Commands
 
@@ -93,10 +94,11 @@ make test NAME=data-structures/linear/stacks/stack
 make test-all
 make contract NAME=data-structures/linear/stacks/stack
 make benchmark NAME=data-structures/linear/stacks/stack
+go test -tags=contract ./...
 make race
 make benchmark-compare OLD=before.txt NEW=after.txt
 ```
 
-`make test` and `make test-all` are safe before any exercise is implemented.
-`make contract` and `make benchmark` require the named leaf's production API.
-See [bench/README.md](bench/README.md) for benchmark design and all leaf plans.
+`make test` and `make test-all` remain the safe default suite. `make contract`
+and `make benchmark` target a named completed leaf. See
+[bench/README.md](bench/README.md) for benchmark design and all leaf plans.
