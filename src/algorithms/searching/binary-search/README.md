@@ -33,5 +33,5 @@ Best O(1), average and worst O(log n) time; O(1) auxiliary space.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/searching/binary-search
+just contract algorithms/searching/binary-search
 ```

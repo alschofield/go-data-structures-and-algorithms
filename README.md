@@ -79,8 +79,8 @@ Default tests deliberately exclude contract tests, so a fresh clone remains
 usable. Run an individual leaf contract while implementing or reviewing it:
 
 ```sh
-make contract NAME=data-structures/linear/stacks/stack
-make contract NAME=algorithms/graph-traversal/breadth-first-search
+just contract data-structures/linear/stacks/stack
+just contract algorithms/graph-traversal/breadth-first-search
 ```
 
 The `contract` build tag is intentional, not an implementation escape hatch.
@@ -90,15 +90,15 @@ full contract gate remains explicit.
 ## Commands
 
 ```sh
-make test NAME=data-structures/linear/stacks/stack
-make test-all
-make contract NAME=data-structures/linear/stacks/stack
-make benchmark NAME=data-structures/linear/stacks/stack
+just test data-structures/linear/stacks/stack
+just test-all
+just contract data-structures/linear/stacks/stack
+just benchmark data-structures/linear/stacks/stack
 go test -tags=contract ./...
-make race
-make benchmark-compare OLD=before.txt NEW=after.txt
+just race
+just benchmark-compare before.txt after.txt
 ```
 
-`make test` and `make test-all` remain the safe default suite. `make contract`
-and `make benchmark` target a named completed leaf. See
+`just test` and `just test-all` remain the safe default suite. `just contract`
+and `just benchmark` target a named completed leaf. See
 [bench/README.md](bench/README.md) for benchmark design and all leaf plans.

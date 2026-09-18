@@ -47,5 +47,5 @@ and signed weights are stored without restriction.
 ## Verification
 
 ```sh
-make contract NAME=data-structures/graphs/representations/adjacency-matrix
+just contract data-structures/graphs/representations/adjacency-matrix
 ```

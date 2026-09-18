@@ -30,5 +30,5 @@ uses O(log n) stack space for balanced partitions and O(n) in the worst case.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/sorting/comparison/quick-sort
+just contract algorithms/sorting/comparison/quick-sort
 ```

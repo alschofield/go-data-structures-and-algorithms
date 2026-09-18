@@ -46,5 +46,5 @@ links traversed. Space is O(n).
 ## Verification
 
 ```sh
-make contract NAME=data-structures/linear/linked/doubly-linked-list
+just contract data-structures/linear/linked/doubly-linked-list
 ```

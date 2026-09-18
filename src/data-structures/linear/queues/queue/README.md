@@ -41,5 +41,5 @@ growth, values occupy the leading contiguous slots, with head zero and tail size
 ## Verification
 
 ```sh
-make contract NAME=data-structures/linear/queues/queue
+just contract data-structures/linear/queues/queue
 ```

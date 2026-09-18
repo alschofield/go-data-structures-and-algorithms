@@ -27,5 +27,5 @@ O(n+k) time and O(k) auxiliary space, where `k` is `keyLimit`.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/sorting/non-comparison/counting-sort
+just contract algorithms/sorting/non-comparison/counting-sort
 ```

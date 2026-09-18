@@ -49,5 +49,5 @@ O(V+E).
 ## Verification
 
 ```sh
-make contract NAME=data-structures/graphs/representations/adjacency-list
+just contract data-structures/graphs/representations/adjacency-list
 ```

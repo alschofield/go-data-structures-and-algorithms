@@ -29,5 +29,5 @@ O(n^2) time in every case and O(1) auxiliary space.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/sorting/comparison/selection-sort
+just contract algorithms/sorting/comparison/selection-sort
 ```

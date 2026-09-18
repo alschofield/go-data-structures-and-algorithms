@@ -52,5 +52,5 @@ visited children; space is O(n).
 ## Verification
 
 ```sh
-make contract NAME=data-structures/trees/binary-search-trees/binary-search-tree
+just contract data-structures/trees/binary-search-trees/binary-search-tree
 ```

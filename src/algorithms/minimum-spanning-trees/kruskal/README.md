@@ -45,7 +45,7 @@ O(E log E + E alpha(V)) time and O(E+V) space.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/minimum-spanning-trees/kruskal
+just contract algorithms/minimum-spanning-trees/kruskal
 go test -tags=contract -run '^$' -bench=Kruskal -benchmem ./src/algorithms/minimum-spanning-trees/kruskal
 ```
 

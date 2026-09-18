@@ -28,5 +28,5 @@ O(n log n) time and O(n) merge-buffer space, plus O(log n) recursion space.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/sorting/comparison/merge-sort
+just contract algorithms/sorting/comparison/merge-sort
 ```

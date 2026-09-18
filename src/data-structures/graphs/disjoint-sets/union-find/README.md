@@ -39,5 +39,5 @@ O(alpha(n)); space is O(n).
 ## Verification
 
 ```sh
-make contract NAME=data-structures/graphs/disjoint-sets/union-find
+just contract data-structures/graphs/disjoint-sets/union-find
 ```

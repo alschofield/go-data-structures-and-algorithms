@@ -31,5 +31,5 @@ Best O(1), average and worst O(n) time; O(1) auxiliary space.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/searching/linear-search
+just contract algorithms/searching/linear-search
 ```

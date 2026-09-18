@@ -10,10 +10,10 @@ exercise, and therefore have no standalone benchmark plan.
 ## Running And Comparing
 
 ```sh
-make benchmark NAME=data-structures/linear/stacks/stack
+just benchmark data-structures/linear/stacks/stack
 go test -tags=contract -run '^$' -bench . -benchmem -count=10 ./src/algorithms/sorting/comparison/quick-sort > before.txt
 go test -tags=contract -run '^$' -bench . -benchmem -count=10 ./src/algorithms/sorting/comparison/quick-sort > after.txt
-make benchmark-compare OLD=before.txt NEW=after.txt
+just benchmark-compare before.txt after.txt
 ```
 
 `benchstat` is the optional comparison tool from `golang.org/x/perf/cmd/benchstat`.

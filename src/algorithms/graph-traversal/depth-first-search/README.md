@@ -39,5 +39,5 @@ O(V+E) time and O(V) space with adjacency lists.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/graph-traversal/depth-first-search
+just contract algorithms/graph-traversal/depth-first-search
 ```

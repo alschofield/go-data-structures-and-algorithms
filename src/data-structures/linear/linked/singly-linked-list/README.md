@@ -44,5 +44,5 @@ head.
 ## Verification
 
 ```sh
-make contract NAME=data-structures/linear/linked/singly-linked-list
+just contract data-structures/linear/linked/singly-linked-list
 ```

@@ -28,5 +28,5 @@ O(n log n) time in every case and O(1) iterative auxiliary space.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/sorting/comparison/heap-sort
+just contract algorithms/sorting/comparison/heap-sort
 ```

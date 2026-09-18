@@ -27,7 +27,7 @@ slice, then reverse that slice.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/shortest-paths/dijkstra
+just contract algorithms/shortest-paths/dijkstra
 go test -tags=contract -run '^$' -bench=Dijkstra -benchmem ./src/algorithms/shortest-paths/dijkstra
 ```
 

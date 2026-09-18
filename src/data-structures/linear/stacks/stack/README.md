@@ -36,5 +36,5 @@ is O(n), including retained backing-slice capacity.
 ## Verification
 
 ```sh
-make contract NAME=data-structures/linear/stacks/stack
+just contract data-structures/linear/stacks/stack
 ```

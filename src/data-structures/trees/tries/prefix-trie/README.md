@@ -38,5 +38,5 @@ All key operations are O(m) for rune length m; space is O(total stored runes).
 ## Verification
 
 ```sh
-make contract NAME=data-structures/trees/tries/prefix-trie
+just contract data-structures/trees/tries/prefix-trie
 ```

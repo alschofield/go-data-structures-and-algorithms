@@ -29,5 +29,5 @@ Best O(n), average and worst O(n^2) time; O(1) auxiliary space.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/sorting/comparison/bubble-sort
+just contract algorithms/sorting/comparison/bubble-sort
 ```

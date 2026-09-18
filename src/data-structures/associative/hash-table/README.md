@@ -54,5 +54,5 @@ entry detaches its node and decrements length once.
 ## Verification
 
 ```sh
-make contract NAME=data-structures/associative/hash-table
+just contract data-structures/associative/hash-table
 ```

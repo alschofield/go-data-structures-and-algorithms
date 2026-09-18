@@ -42,5 +42,5 @@ O(n).
 ## Verification
 
 ```sh
-make contract NAME=data-structures/trees/heaps/binary-heap
+just contract data-structures/trees/heaps/binary-heap
 ```

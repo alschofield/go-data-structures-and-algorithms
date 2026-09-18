@@ -31,5 +31,5 @@ constant digit count independent of input size.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/sorting/non-comparison/radix-sort
+just contract algorithms/sorting/non-comparison/radix-sort
 ```

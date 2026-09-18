@@ -62,7 +62,7 @@ Worst O((V+E) log V) time and O(V) space.
 ## Verification
 
 ```sh
-make contract NAME=algorithms/shortest-paths/a-star
+just contract algorithms/shortest-paths/a-star
 go test -tags=contract -run '^$' -bench=AStar -benchmem ./src/algorithms/shortest-paths/a-star
 ```
 

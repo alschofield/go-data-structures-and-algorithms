@@ -55,5 +55,5 @@ representation documents its own targets.
 ## Verification
 
 ```sh
-make contract NAME=data-structures/graphs/graph
+just contract data-structures/graphs/graph
 ```
